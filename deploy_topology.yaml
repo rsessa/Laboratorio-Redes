@@ -1,13 +1,13 @@
 ---
-- name: Despliegue Consolidado de Topología MikroTik (Plano de Datos, GRE/IPsec y OSPF)
+- name: Consolidated MikroTik Topology Deployment (Data Plane, GRE/IPsec and OSPF)
   hosts: "mikrotik_lab:!oob-master"
   gather_facts: false
 
   tasks:
     # -------------------------------------------------------------
-    # 0. Saneamiento L2 / L3 (Común a los 4 nodos)
+    # 0. L2 / L3 Cleanup (Common to all 4 nodes)
     # -------------------------------------------------------------
-    - name: Sanear bridges, firewalls y clientes DHCP residuales
+    - name: Clean up residual bridges, firewalls and DHCP clients
       community.routeros.command:
         commands:
           - /interface bridge port remove [find interface!=ether5]
@@ -19,9 +19,9 @@
           - /ip address remove [find address!~"10.99.0."]
 
     # -------------------------------------------------------------
-    # 1. HQ-EDGE-01 (hEX - Gateway WAN HQ)
+    # 1. HQ-EDGE-01 (hEX - WAN HQ Gateway)
     # -------------------------------------------------------------
-    - name: Configurar HQ-EDGE-01 (hq-dist-01)
+    - name: Configure HQ-EDGE-01 (hq-dist-01)
       when: inventory_hostname in ['hq-edge-01', 'hq-dist-01']
       community.routeros.command:
         commands:
@@ -37,9 +37,9 @@
           - /routing ospf interface add interface=ether2 cost=10 network-type=point-to-point
 
     # -------------------------------------------------------------
-    # 2. HQ-CORE-01 (hAP ac2 - Distribución / LAN HQ)
+    # 2. HQ-CORE-01 (hAP ac2 - Distribution / HQ LAN)
     # -------------------------------------------------------------
-    - name: Configurar HQ-CORE-01
+    - name: Configure HQ-CORE-01
       when: inventory_hostname == 'hq-core-01'
       community.routeros.command:
         commands:
@@ -58,9 +58,9 @@
           - /routing ospf interface add interface=br-lan passive=yes
 
     # -------------------------------------------------------------
-    # 3. BRANCH-EDGE-01 (hAP ac2 - Gateway WAN Branch)
+    # 3. BRANCH-EDGE-01 (hAP ac2 - Branch WAN Gateway)
     # -------------------------------------------------------------
-    - name: Configurar BRANCH-EDGE-01
+    - name: Configure BRANCH-EDGE-01
       when: inventory_hostname == 'branch-edge-01'
       community.routeros.command:
         commands:
@@ -76,9 +76,9 @@
           - /routing ospf interface add interface=ether2 cost=10 network-type=point-to-point
 
     # -------------------------------------------------------------
-    # 4. BRANCH-CORE-01 (hEX - Distribución / LAN Branch)
+    # 4. BRANCH-CORE-01 (hEX - Distribution / Branch LAN)
     # -------------------------------------------------------------
-    - name: Configurar BRANCH-CORE-01
+    - name: Configure BRANCH-CORE-01
       when: inventory_hostname == 'branch-core-01'
       community.routeros.command:
         commands:
@@ -97,9 +97,9 @@
           - /routing ospf interface add interface=br-lan passive=yes
 
     # -------------------------------------------------------------
-    # 5. Activación de SA IPsec
+    # 5. IPsec SA Activation
     # -------------------------------------------------------------
-    - name: Generar tráfico inicial para disparar IKE y SA IPsec
+    - name: Generate initial traffic to trigger IKE and IPsec SA
       when: inventory_hostname in ['hq-edge-01', 'hq-dist-01']
       community.routeros.command:
         commands:

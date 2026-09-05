@@ -1,27 +1,27 @@
 ---
-- name: Fase 1 - Hardening, Aislamiento y DNAT en OOB-Master (con Safe Revert)
+- name: Phase 1 - Hardening, Isolation and DNAT on OOB-Master (with Safe Revert)
   hosts: oob-master
   gather_facts: false
 
   tasks:
-    - name: 1. Crear backup de rescate en almacenamiento local
+    - name: 1. Create rescue backup in local storage
       community.routeros.command:
         commands:
           - /system backup save name=pre_hardening_safe.backup
 
-    - name: 2. Armar temporizador de rescate a 3 minutos
+    - name: 2. Set up 3-minute rescue dead man's switch
       community.routeros.command:
         commands:
           - /system scheduler remove [find name=SAFETY_REVERT]
           - /system scheduler add name=SAFETY_REVERT interval=3m on-event="/system backup load name=pre_hardening_safe.backup password=\"\""
 
-    - name: 3. Aplicar RoMON, Firewall Filter y NAT completa
+    - name: 3. Apply RoMON, Firewall Filter and full NAT ruleset
       community.routeros.command:
         commands:
-          # Agente RoMON L2
+          # RoMON L2 agent
           - /tool romon set enabled=yes
 
-          # Reglas Filter (Input y Forward Zero-Routing)
+          # Filter Rules (Input and Zero-Routing Forward)
           - /ip firewall filter remove [find]
           - /ip firewall filter add chain=input action=accept connection-state=established,related comment=MGMT-INPUT-ESTABLISHED
           - /ip firewall filter add chain=input action=accept in-interface=ether1 src-address=192.168.1.0/24 protocol=icmp comment=MGMT-INPUT-ICMP
@@ -34,7 +34,7 @@
           - /ip firewall filter add chain=forward action=accept connection-nat-state=dstnat in-interface=ether1 comment=MGMT-FWD-ALLOW-DNAT
           - /ip firewall filter add chain=forward action=drop comment=ISOLATION-ZERO-ROUTING-DROP
 
-          # Reglas NAT (DNAT de los 3 nodos + Masquerade simetrico)
+          # NAT Rules (DNAT for the 3 nodes + symmetric Masquerade)
           - /ip firewall nat remove [find]
           - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2203 protocol=tcp action=dst-nat to-addresses=10.99.0.3 to-ports=22 comment=DNAT-HQ-CORE-01
           - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2204 protocol=tcp action=dst-nat to-addresses=10.99.0.4 to-ports=22 comment=DNAT-BRANCH-EDGE-01
@@ -42,7 +42,7 @@
           - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2206 protocol=tcp action=dst-nat to-addresses=10.99.0.6 to-ports=22 comment=DNAT-MTK-01
           - /ip firewall nat add chain=srcnat out-interface=bridgeLocal action=masquerade comment=SNAT-MASQUERADE-LAB
 
-    - name: 4. Validar accesibilidad interna hacia la subred OOB (10.99.0.0/24)
+    - name: 4. Validate internal reachability to the OOB subnet (10.99.0.0/24)
       community.routeros.command:
         commands:
           - /ping 10.99.0.3 count=2
@@ -50,7 +50,7 @@
           - /ping 10.99.0.5 count=2
           - /ping 10.99.0.6 count=2
 
-    - name: 5. Validar que los puertos DNAT externos responden desde el controlador
+    - name: 5. Validate that external DNAT ports respond from the controller
       ansible.builtin.wait_for:
         host: "{{ ansible_host }}"
         port: "{{ item }}"
@@ -62,18 +62,18 @@
         - 2206
       delegate_to: localhost
 
-    - name: 6. Desarmar Dead Man's Switch tras validación exitosa
+    - name: 6. Disarm dead man's switch after successful validation
       community.routeros.command:
         commands:
           - /system scheduler remove [find name=SAFETY_REVERT]
           - /file remove [find name="pre_hardening_safe.backup"]
 
-- name: Fase 2 - Habilitar agente RoMON en los routers del laboratorio
+- name: Phase 2 - Enable RoMON agent on lab routers
   hosts: mikrotik_lab:!oob-master
   gather_facts: false
 
   tasks:
-    - name: Activar RoMON en el nodo
+    - name: Enable RoMON on the node
       community.routeros.command:
         commands:
           - /tool romon set enabled=yes

@@ -6,17 +6,17 @@ OOB_USER="admin"
 ANSIBLE_USER="admin"
 OUTPUT_FILE="hosts_discovered.yaml"
 
-echo "[*] Consultando vecinos MikroTik (MNDP/LLDP) desde el router OOB..."
+echo "[*] Querying MikroTik neighbors (MNDP/LLDP) from the OOB router..."
 
-# Extraer vecinos en formato clave=valor estructurado
+# Extract neighbors in structured key=value format
 RAW_NEIGHBORS=$(ssh -o StrictHostKeyChecking=no "${OOB_USER}@${OOB_IP}" \
   "/ip neighbor print terse without-paging")
 
-# Extraer leases DHCP activas por si algún nodo no anuncia MNDP
+# Extract active DHCP leases in case any node does not advertise MNDP
 RAW_LEASES=$(ssh -o StrictHostKeyChecking=no "${OOB_USER}@${OOB_IP}" \
   "/ip dhcp-server lease print terse without-paging")
 
-echo "[*] Generando inventario Ansible: ${OUTPUT_FILE}..."
+echo "[*] Generating Ansible inventory: ${OUTPUT_FILE}..."
 
 cat << 'EOF' > "${OUTPUT_FILE}"
 all:
@@ -29,19 +29,19 @@ all:
       hosts:
 EOF
 
-# Parsear vecinos MNDP e inyectar al YAML
+# Parse MNDP neighbors and inject into YAML
 echo "${RAW_NEIGHBORS}" | while read -r line; do
   [ -z "$line" ] && continue
   
-  # Extraer campos
+  # Extract fields
   IDENTITY=$(echo "$line" | grep -o 'identity="[^"]*"' | cut -d'"' -f2 || true)
   ADDRESS=$(echo "$line" | grep -o 'address=[^ ]*' | cut -d'=' -f2 || true)
   MAC=$(echo "$line" | grep -o 'mac-address=[^ ]*' | cut -d'=' -f2 || true)
   BOARD=$(echo "$line" | grep -o 'board=[^ ]*' | cut -d'=' -f2 || true)
 
-  # Normalizar hostname si no tiene identity definida
+  # Normalize hostname if no identity is defined
   [ -z "$IDENTITY" ] && IDENTITY="mtk_${MAC//:/}"
-  # Reemplazar caracteres no válidos para hostnames de Ansible
+  # Replace invalid characters for Ansible hostnames
   SAFE_HOST=$(echo "$IDENTITY" | tr ' ' '_' | tr -cd '[:alnum:]_-')
 
   if [ -n "$ADDRESS" ]; then
@@ -54,12 +54,12 @@ HOST_ENTRY
   fi
 done
 
-# Añadir el propio OOB-Master al inventario
+# Add the OOB-Master itself to the inventory
 cat << EOF >> "${OUTPUT_FILE}"
         oob-master:
           ansible_host: ${OOB_IP}
           board_model: "RB750r2"
 EOF
 
-echo "[+] Inventario generado con éxito."
+echo "[+] Inventory generated successfully."
 cat "${OUTPUT_FILE}"

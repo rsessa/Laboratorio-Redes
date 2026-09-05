@@ -1,9 +1,9 @@
 ---
-- name: Auditoria y extraccion de topologia de red
+- name: Network topology audit and data extraction
   hosts: mikrotik_lab
   gather_facts: false
   tasks:
-    - name: Obtener informacion del dispositivo
+    - name: Collect device information
       community.routeros.command:
         commands:
           # 0..5: Health & Assets
@@ -41,7 +41,7 @@
           - /ip firewall raw print stats terse
           - /ip firewall connection print count-only
 
-          # 27..34: Gestion, AAA y Servicios
+          # 27..34: Management, AAA and Services
           - /ip service print detail without-paging
           - /user print terse detail
           - /user group print terse detail
@@ -55,7 +55,7 @@
           - /tool romon print terse
           - /tool romon neighbor print terse detail
 
-          # 37..44: Servicios, VPN & QoS
+          # 37..44: Services, VPN & QoS
           - /ip dhcp-server lease print terse detail
           - /ip pool print terse detail
           - /ip ipsec policy print terse
@@ -70,7 +70,7 @@
           - /export verbose hide-sensitive
       register: router_audit
 
-    - name: Crear directorio para los informes
+    - name: Create directory for reports
       delegate_to: localhost
       ansible.builtin.file:
         path: "./network_audit"
@@ -78,12 +78,12 @@
         mode: "0755"
       run_once: true
 
-    - name: Guardar volcado de configuracion y estado por nodo
+    - name: Save configuration and state dump per node
       delegate_to: localhost
       ansible.builtin.copy:
         content: |
           ===================================================
-          AUDITORIA DE NODO: {{ inventory_hostname }} ({{ ansible_host }})
+          NODE AUDIT: {{ inventory_hostname }} ({{ ansible_host }})
           ===================================================
 
           =================
@@ -180,7 +180,7 @@
           {{ router_audit.stdout[26] }}
 
           =================
-          GESTION, AAA Y SERVICIOS
+          MANAGEMENT, AAA AND SERVICES
           =================
           >>> [IP SERVICES]
           {{ router_audit.stdout[27] }}

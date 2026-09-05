@@ -1,24 +1,24 @@
 ---
-- name: Localizar snapshot de respaldo más reciente
+- name: Locate most recent backup snapshot
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Buscar directorios de backup disponibles
+    - name: Search for available backup directories
       ansible.builtin.find:
         paths: "backups"
         file_type: directory
       register: backup_folders
 
-    - name: Validar existencia de copias
+    - name: Validate that backups exist
       ansible.builtin.fail:
-        msg: "No se encontró ningún directorio en 'backups/'."
+        msg: "No directory found in 'backups/'."
       when: backup_folders.files | length == 0
 
-    - name: Seleccionar marca temporal más reciente
+    - name: Select the most recent timestamp
       ansible.builtin.set_fact:
         latest_backup_dir: "{{ (backup_folders.files | sort(attribute='ctime') | last).path }}"
 
-- name: Restaurar configuración en los 4 nodos del laboratorio
+- name: Restore configuration on all 4 lab nodes
   hosts: "mikrotik_lab:!oob-master"
   gather_facts: false
   vars:
@@ -26,7 +26,7 @@
     target_backup_dir: "{{ hostvars['localhost']['latest_backup_dir'] }}"
 
   tasks:
-    - name: 1. Subir archivo .backup al router vía SCP
+    - name: 1. Upload .backup file to the router via SCP
       ansible.builtin.command: >
         scp -P {{ ansible_port | default(22) }}
         -o StrictHostKeyChecking=no
@@ -37,12 +37,12 @@
       delegate_to: localhost
       changed_when: true
 
-    - name: 2. Disparar restauración en segundo plano con :execute
+    - name: 2. Trigger restore in the background using :execute
       community.routeros.command:
         commands:
           - ':execute {/system backup load name="restore.backup" password=""}'
 
-    - name: 3. Esperar a que el router corte la conexión (Reinicio en curso)
+    - name: 3. Wait for the router to drop the connection (reboot in progress)
       ansible.builtin.wait_for:
         host: "{{ ansible_host }}"
         port: "{{ ansible_port | default(22) }}"
@@ -51,7 +51,7 @@
         timeout: 30
       delegate_to: localhost
 
-    - name: 4. Esperar a que el router vuelva a levantar tras el reinicio
+    - name: 4. Wait for the router to come back up after reboot
       ansible.builtin.wait_for:
         host: "{{ ansible_host }}"
         port: "{{ ansible_port | default(22) }}"
@@ -60,12 +60,12 @@
         timeout: 120
       delegate_to: localhost
 
-    - name: 5. Comprobar uptime real tras el inicio
+    - name: 5. Check actual uptime after startup
       community.routeros.command:
         commands:
           - ":put [/system resource get uptime]"
       register: new_uptime
 
-    - name: 6. Confirmación de nodo restaurado
+    - name: 6. Confirm node has been restored
       ansible.builtin.debug:
-        msg: "{{ inventory_hostname }} restaurado con éxito (Uptime: {{ new_uptime.stdout[0] | trim }})"
+        msg: "{{ inventory_hostname }} successfully restored (Uptime: {{ new_uptime.stdout[0] | trim }})"
