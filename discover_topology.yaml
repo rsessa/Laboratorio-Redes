@@ -1,0 +1,254 @@
+---
+- name: Auditoria y extraccion de topologia de red
+  hosts: mikrotik_lab
+  gather_facts: false
+  tasks:
+    - name: Obtener informacion del dispositivo
+      community.routeros.command:
+        commands:
+          # 0..5: Health & Assets
+          - /system identity print without-paging
+          - /system resource print
+          - /system routerboard print
+          - /system package print
+          - /system license print
+          - /system health print
+
+          # 6..12: L2 & Switching
+          - /interface print detail without-paging
+          - /interface ethernet print detail without-paging
+          - /interface bridge print detail without-paging
+          - /interface bridge port print detail without-paging
+          - /interface bridge vlan print detail without-paging
+          - /interface bridge host print terse
+          - /interface bonding print detail without-paging
+
+          # 13..20: L3 & Routing
+          - /ip address print detail without-paging
+          - /ip route print detail without-paging
+          - /ip neighbor print detail without-paging
+          - /ip arp print detail without-paging
+          - /routing ospf neighbor print detail without-paging
+          - /routing ospf lsa print detail without-paging
+          - /routing bgp peer print detail without-paging
+          - /ip route vrf print detail without-paging
+
+          # 21..26: Firewall & Security
+          - /ip firewall filter print detail without-paging
+          - /ip firewall nat print detail without-paging
+          - /ip firewall mangle print detail without-paging
+          - /ip firewall address-list print detail without-paging
+          - /ip firewall raw print stats terse
+          - /ip firewall connection print count-only
+
+          # 27..34: Gestion, AAA y Servicios
+          - /ip service print detail without-paging
+          - /user print terse detail
+          - /user group print terse detail
+          - /user active print terse detail
+          - /user ssh-keys print terse detail
+          - /certificate print terse detail
+          - /radius print terse detail
+          - /system ntp client print terse detail
+
+          # 35..36: RoMON Management
+          - /tool romon print terse
+          - /tool romon neighbor print terse detail
+
+          # 37..44: Servicios, VPN & QoS
+          - /ip dhcp-server lease print terse detail
+          - /ip pool print terse detail
+          - /ip ipsec policy print terse
+          - /ip ipsec installed-sa print terse
+          - /interface sstp-server print terse
+          - /interface sstp-client print terse
+          - /queue simple print terse
+          - /queue tree print terse
+
+          # 45..46: Logs & Export
+          - /log print terse
+          - /export verbose hide-sensitive
+      register: router_audit
+
+    - name: Crear directorio para los informes
+      delegate_to: localhost
+      ansible.builtin.file:
+        path: "./network_audit"
+        state: directory
+        mode: "0755"
+      run_once: true
+
+    - name: Guardar volcado de configuracion y estado por nodo
+      delegate_to: localhost
+      ansible.builtin.copy:
+        content: |
+          ===================================================
+          AUDITORIA DE NODO: {{ inventory_hostname }} ({{ ansible_host }})
+          ===================================================
+
+          =================
+          HEALTH & ASSETS
+          =================
+          >>> [SYSTEM IDENTITY]
+          {{ router_audit.stdout[0] }}
+
+          >>> [SYSTEM RESOURCE]
+          {{ router_audit.stdout[1] }}
+
+          >>> [ROUTERBOARD]
+          {{ router_audit.stdout[2] }}
+
+          >>> [SYSTEM PACKAGE]
+          {{ router_audit.stdout[3] }}
+
+          >>> [SYSTEM LICENSE]
+          {{ router_audit.stdout[4] }}
+
+          >>> [SYSTEM HEALTH]
+          {{ router_audit.stdout[5] }}
+
+          =================
+          L2 & SWITCHING
+          =================
+          >>> [INTERFACES]
+          {{ router_audit.stdout[6] }}
+
+          >>> [ETHERNET INTERFACES]
+          {{ router_audit.stdout[7] }}
+
+          >>> [BRIDGE INTERFACES]
+          {{ router_audit.stdout[8] }}
+
+          >>> [BRIDGE PORTS]
+          {{ router_audit.stdout[9] }}
+
+          >>> [BRIDGE VLANS]
+          {{ router_audit.stdout[10] }}
+
+          >>> [BRIDGE HOSTS]
+          {{ router_audit.stdout[11] }}
+
+          >>> [BONDING INTERFACES]
+          {{ router_audit.stdout[12] }}
+
+          =================
+          L3 & ROUTING
+          =================
+          >>> [IP ADDRESSES]
+          {{ router_audit.stdout[13] }}
+
+          >>> [ROUTING TABLE]
+          {{ router_audit.stdout[14] }}
+
+          >>> [LLDP / MNDP NEIGHBORS]
+          {{ router_audit.stdout[15] }}
+
+          >>> [ARP CACHE]
+          {{ router_audit.stdout[16] }}
+
+          >>> [OSPF NEIGHBORS]
+          {{ router_audit.stdout[17] }}
+
+          >>> [OSPF LSA DATABASE]
+          {{ router_audit.stdout[18] }}
+
+          >>> [BGP PEERS]
+          {{ router_audit.stdout[19] }}
+
+          >>> [VRF TABLE]
+          {{ router_audit.stdout[20] }}
+
+          =================
+          HARDENING & STATE
+          =================
+          >>> [FIREWALL FILTER RULES]
+          {{ router_audit.stdout[21] }}
+
+          >>> [FIREWALL NAT RULES]
+          {{ router_audit.stdout[22] }}
+
+          >>> [FIREWALL MANGLE RULES]
+          {{ router_audit.stdout[23] }}
+
+          >>> [FIREWALL ADDRESS LISTS]
+          {{ router_audit.stdout[24] }}
+
+          >>> [FIREWALL RAW STATS]
+          {{ router_audit.stdout[25] }}
+
+          >>> [FIREWALL CONNECTION COUNT]
+          {{ router_audit.stdout[26] }}
+
+          =================
+          GESTION, AAA Y SERVICIOS
+          =================
+          >>> [IP SERVICES]
+          {{ router_audit.stdout[27] }}
+
+          >>> [USERS]
+          {{ router_audit.stdout[28] }}
+
+          >>> [USER GROUPS]
+          {{ router_audit.stdout[29] }}
+
+          >>> [ACTIVE USERS]
+          {{ router_audit.stdout[30] }}
+
+          >>> [SSH KEYS]
+          {{ router_audit.stdout[31] }}
+
+          >>> [CERTIFICATES]
+          {{ router_audit.stdout[32] }}
+
+          >>> [RADIUS SERVERS]
+          {{ router_audit.stdout[33] }}
+
+          >>> [NTP CLIENT]
+          {{ router_audit.stdout[34] }}
+
+          =================
+          OOB MANAGEMENT & RoMON
+          =================
+          >>> [RoMON STATUS]
+          {{ router_audit.stdout[35] }}
+
+          >>> [RoMON NEIGHBORS]
+          {{ router_audit.stdout[36] }}
+
+          =================
+          DHCP, VPN & QoS
+          =================
+          >>> [DHCP LEASES]
+          {{ router_audit.stdout[37] }}
+
+          >>> [IP POOLS]
+          {{ router_audit.stdout[38] }}
+
+          >>> [IPSEC POLICIES]
+          {{ router_audit.stdout[39] }}
+
+          >>> [IPSEC INSTALLED SA]
+          {{ router_audit.stdout[40] }}
+
+          >>> [SSTP SERVER INTERFACES]
+          {{ router_audit.stdout[41] }}
+
+          >>> [SSTP CLIENT INTERFACES]
+          {{ router_audit.stdout[42] }}
+
+          >>> [SIMPLE QUEUES]
+          {{ router_audit.stdout[43] }}
+
+          >>> [QUEUE TREES]
+          {{ router_audit.stdout[44] }}
+
+          =================
+          LOGS & RAW EXPORT
+          =================
+          >>> [SYSTEM LOGS]
+          {{ router_audit.stdout[45] }}
+
+          >>> [EXPORT CONFIGURATION]
+          {{ router_audit.stdout[46] }}
+        dest: "./network_audit/{{ inventory_hostname }}_audit.txt"
+        mode: "0644"

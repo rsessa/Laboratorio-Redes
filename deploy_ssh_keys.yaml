@@ -1,0 +1,50 @@
+---
+- name: Desplegar claves SSH en laboratorio MikroTik
+  hosts: mikrotik_lab
+  gather_facts: false
+
+  vars:
+    ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+    ssh_pub_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa.pub"
+    remote_key_filename: "ansible_key.pub"
+
+  tasks:
+    - name: Asegurar que existe el par de claves SSH en el controlador local
+      community.crypto.openssh_keypair:
+        path: "{{ ssh_key_path }}"
+        type: rsa
+        size: 4096
+        state: present
+      delegate_to: localhost
+      run_once: true
+
+    - name: Transferir clave pública al router vía SCP
+      ansible.builtin.command: >
+        sshpass -p "{{ ansible_password }}"
+        scp -P {{ ansible_port }}
+        -o StrictHostKeyChecking=no
+        -o UserKnownHostsFile=/dev/null
+        {{ ssh_pub_key_path }}
+        {{ ansible_user }}@{{ ansible_host }}:{{ remote_key_filename }}
+      delegate_to: localhost
+      changed_when: true
+
+    - name: Importar clave SSH en RouterOS
+      community.routeros.command:
+        commands:
+          - "/user ssh-keys import public-key-file={{ remote_key_filename }} user={{ ansible_user }}"
+      register: import_result
+      # RouterOS elimina automáticamente el archivo .pub del almacenamiento tras importarlo
+      failed_when:
+        - import_result.failed is defined and import_result.failed
+        - "'already' not in (import_result.msg | default(''))"
+
+    - name: Verificar clave importada en el nodo
+      community.routeros.command:
+        commands:
+          - "/user ssh-keys print"
+      register: keys_status
+
+    - name: Mostrar estado de claves autorizadas
+      ansible.builtin.debug:
+        msg: "{{ keys_status.stdout_lines[0] }}"

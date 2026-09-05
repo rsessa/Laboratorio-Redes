@@ -1,0 +1,60 @@
+---
+- name: Extracción de copias de seguridad de la infraestructura MikroTik
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: 1. Fijar directorio de backup estático y crearlo en WSL
+      block:
+        - name: Generar ruta de backup única
+          ansible.builtin.set_fact:
+            local_backup_dir: "backups/{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
+          run_once: true
+
+        - name: Crear directorio local en WSL
+          ansible.builtin.file:
+            path: "{{ local_backup_dir }}"
+            state: directory
+            mode: "0755"
+          run_once: true
+      delegate_to: localhost
+
+    - name: 2. Exportar configuración en texto (.rsc) vía consola
+      community.routeros.command:
+        commands:
+          - /export compact
+      register: rsc_export
+
+    - name: 3. Guardar archivo .rsc en el controlador local
+      ansible.builtin.copy:
+        content: "{{ rsc_export.stdout[0] }}"
+        dest: "{{ local_backup_dir }}/{{ inventory_hostname }}.rsc"
+        mode: "0644"
+      delegate_to: localhost
+
+    - name: 4. Generar backup binario en el router (.backup)
+      community.routeros.command:
+        commands:
+          - /system backup save name=snap_ansible
+
+    - name: 5. Localizar ruta exacta del archivo binario en el almacenamiento
+      community.routeros.command:
+        commands:
+          - ':put [/file get [find name~"snap_ansible"] name]'
+      register: remote_file_path
+
+    - name: 6. Descargar backup binario vía SCP hacia el controlador local
+      ansible.builtin.command: >
+        scp -P {{ ansible_port | default(22) }}
+        -o StrictHostKeyChecking=no
+        -o UserKnownHostsFile=/dev/null
+        -i {{ lookup('env', 'HOME') }}/.ssh/id_rsa
+        {{ ansible_user | default('admin') }}@{{ ansible_host }}:"{{ remote_file_path.stdout[0] | trim }}"
+        {{ local_backup_dir }}/{{ inventory_hostname }}.backup
+      delegate_to: localhost
+      changed_when: true
+
+    - name: 7. Limpiar archivo binario temporal en el router
+      community.routeros.command:
+        commands:
+          - /file remove [find name~"snap_ansible"]

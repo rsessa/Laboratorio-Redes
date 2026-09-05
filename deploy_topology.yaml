@@ -1,0 +1,106 @@
+---
+- name: Despliegue Consolidado de Topología MikroTik (Plano de Datos, GRE/IPsec y OSPF)
+  hosts: "mikrotik_lab:!oob-master"
+  gather_facts: false
+
+  tasks:
+    # -------------------------------------------------------------
+    # 0. Saneamiento L2 / L3 (Común a los 4 nodos)
+    # -------------------------------------------------------------
+    - name: Sanear bridges, firewalls y clientes DHCP residuales
+      community.routeros.command:
+        commands:
+          - /interface bridge port remove [find interface!=ether5]
+          - /ip firewall filter disable [find]
+          - /ip dhcp-client remove [find]
+          - /interface gre remove [find name=gre-vpn]
+          - /routing ospf network remove [find]
+          - /routing ospf interface remove [find]
+          - /ip address remove [find address!~"10.99.0."]
+
+    # -------------------------------------------------------------
+    # 1. HQ-EDGE-01 (hEX - Gateway WAN HQ)
+    # -------------------------------------------------------------
+    - name: Configurar HQ-EDGE-01 (hq-dist-01)
+      when: inventory_hostname in ['hq-edge-01', 'hq-dist-01']
+      community.routeros.command:
+        commands:
+          - /system identity set name=hq-edge-01
+          - /ip address add address=198.51.100.1/30 interface=ether1 comment="WAN-HQ"
+          - /ip address add address=10.1.0.1/30 interface=ether2 comment="TRANSIT-HQ-CORE"
+          - /interface gre add name=gre-vpn local-address=198.51.100.1 remote-address=198.51.100.2 ipsec-secret="LabKey2026" allow-fast-path=no comment="VPN-BRANCH"
+          - /ip address add address=10.100.0.1/30 interface=gre-vpn comment="P2P-VPN"
+          - /routing ospf instance set [find default=yes] router-id=10.255.255.1
+          - /routing ospf network add network=10.1.0.0/30 area=backbone
+          - /routing ospf network add network=10.100.0.0/30 area=backbone
+          - /routing ospf interface add interface=gre-vpn cost=10 network-type=point-to-point
+          - /routing ospf interface add interface=ether2 cost=10 network-type=point-to-point
+
+    # -------------------------------------------------------------
+    # 2. HQ-CORE-01 (hAP ac2 - Distribución / LAN HQ)
+    # -------------------------------------------------------------
+    - name: Configurar HQ-CORE-01
+      when: inventory_hostname == 'hq-core-01'
+      community.routeros.command:
+        commands:
+          - /system identity set name=hq-core-01
+          - /interface bridge remove [find name=br-lan]
+          - /interface bridge add name=br-lan comment="LAN-HQ-USERS"
+          - /ip address add address=10.10.0.1/24 interface=br-lan comment="GATEWAY-HQ-LAN"
+          - /ip address add address=10.1.0.2/30 interface=ether1 comment="TRANSIT-HQ-EDGE"
+          - /ip address add address=10.255.0.1/30 interface=ether2 comment="BACKUP-LEASED-LINE"
+          - /routing ospf instance set [find default=yes] router-id=10.255.255.2
+          - /routing ospf network add network=10.1.0.0/30 area=backbone
+          - /routing ospf network add network=10.255.0.0/30 area=backbone
+          - /routing ospf network add network=10.10.0.0/24 area=backbone
+          - /routing ospf interface add interface=ether1 cost=10 network-type=point-to-point
+          - /routing ospf interface add interface=ether2 cost=50 network-type=point-to-point comment="STANDBY-PATH"
+          - /routing ospf interface add interface=br-lan passive=yes
+
+    # -------------------------------------------------------------
+    # 3. BRANCH-EDGE-01 (hAP ac2 - Gateway WAN Branch)
+    # -------------------------------------------------------------
+    - name: Configurar BRANCH-EDGE-01
+      when: inventory_hostname == 'branch-edge-01'
+      community.routeros.command:
+        commands:
+          - /system identity set name=branch-edge-01
+          - /ip address add address=198.51.100.2/30 interface=ether1 comment="WAN-BRANCH"
+          - /ip address add address=10.2.0.1/30 interface=ether2 comment="TRANSIT-BRANCH-CORE"
+          - /interface gre add name=gre-vpn local-address=198.51.100.2 remote-address=198.51.100.1 ipsec-secret="LabKey2026" allow-fast-path=no comment="VPN-HQ"
+          - /ip address add address=10.100.0.2/30 interface=gre-vpn comment="P2P-VPN"
+          - /routing ospf instance set [find default=yes] router-id=10.255.255.3
+          - /routing ospf network add network=10.2.0.0/30 area=backbone
+          - /routing ospf network add network=10.100.0.0/30 area=backbone
+          - /routing ospf interface add interface=gre-vpn cost=10 network-type=point-to-point
+          - /routing ospf interface add interface=ether2 cost=10 network-type=point-to-point
+
+    # -------------------------------------------------------------
+    # 4. BRANCH-CORE-01 (hEX - Distribución / LAN Branch)
+    # -------------------------------------------------------------
+    - name: Configurar BRANCH-CORE-01
+      when: inventory_hostname == 'branch-core-01'
+      community.routeros.command:
+        commands:
+          - /system identity set name=branch-core-01
+          - /interface bridge remove [find name=br-lan]
+          - /interface bridge add name=br-lan comment="LAN-BRANCH-USERS"
+          - /ip address add address=10.30.0.1/24 interface=br-lan comment="GATEWAY-BRANCH-LAN"
+          - /ip address add address=10.2.0.2/30 interface=ether1 comment="TRANSIT-BRANCH-EDGE"
+          - /ip address add address=10.255.0.2/30 interface=ether2 comment="BACKUP-LEASED-LINE"
+          - /routing ospf instance set [find default=yes] router-id=10.255.255.4
+          - /routing ospf network add network=10.2.0.0/30 area=backbone
+          - /routing ospf network add network=10.255.0.0/30 area=backbone
+          - /routing ospf network add network=10.30.0.0/24 area=backbone
+          - /routing ospf interface add interface=ether1 cost=10 network-type=point-to-point
+          - /routing ospf interface add interface=ether2 cost=50 network-type=point-to-point comment="STANDBY-PATH"
+          - /routing ospf interface add interface=br-lan passive=yes
+
+    # -------------------------------------------------------------
+    # 5. Activación de SA IPsec
+    # -------------------------------------------------------------
+    - name: Generar tráfico inicial para disparar IKE y SA IPsec
+      when: inventory_hostname in ['hq-edge-01', 'hq-dist-01']
+      community.routeros.command:
+        commands:
+          - /ping 10.100.0.2 count=3

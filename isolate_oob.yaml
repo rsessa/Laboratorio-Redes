@@ -1,0 +1,79 @@
+---
+- name: Fase 1 - Hardening, Aislamiento y DNAT en OOB-Master (con Safe Revert)
+  hosts: oob-master
+  gather_facts: false
+
+  tasks:
+    - name: 1. Crear backup de rescate en almacenamiento local
+      community.routeros.command:
+        commands:
+          - /system backup save name=pre_hardening_safe.backup
+
+    - name: 2. Armar temporizador de rescate a 3 minutos
+      community.routeros.command:
+        commands:
+          - /system scheduler remove [find name=SAFETY_REVERT]
+          - /system scheduler add name=SAFETY_REVERT interval=3m on-event="/system backup load name=pre_hardening_safe.backup password=\"\""
+
+    - name: 3. Aplicar RoMON, Firewall Filter y NAT completa
+      community.routeros.command:
+        commands:
+          # Agente RoMON L2
+          - /tool romon set enabled=yes
+
+          # Reglas Filter (Input y Forward Zero-Routing)
+          - /ip firewall filter remove [find]
+          - /ip firewall filter add chain=input action=accept connection-state=established,related comment=MGMT-INPUT-ESTABLISHED
+          - /ip firewall filter add chain=input action=accept in-interface=ether1 src-address=192.168.1.0/24 protocol=icmp comment=MGMT-INPUT-ICMP
+          - /ip firewall filter add chain=input action=accept in-interface=ether1 src-address=192.168.1.0/24 dst-port=22,8291 protocol=tcp comment=MGMT-INPUT-SSH-WINBOX
+          - /ip firewall filter add chain=input action=accept in-interface=ether1 src-address=192.168.1.0/24 dst-port=5678 protocol=udp comment=MGMT-INPUT-MNDP-DISCOVERY
+          - /ip firewall filter add chain=input action=accept in-interface=bridgeLocal comment=MGMT-INPUT-LAB-LOCAL
+          - /ip firewall filter add chain=input action=drop comment=MGMT-INPUT-DROP-REST
+
+          - /ip firewall filter add chain=forward action=accept connection-state=established,related comment=MGMT-FWD-ESTABLISHED
+          - /ip firewall filter add chain=forward action=accept connection-nat-state=dstnat in-interface=ether1 comment=MGMT-FWD-ALLOW-DNAT
+          - /ip firewall filter add chain=forward action=drop comment=ISOLATION-ZERO-ROUTING-DROP
+
+          # Reglas NAT (DNAT de los 3 nodos + Masquerade simetrico)
+          - /ip firewall nat remove [find]
+          - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2203 protocol=tcp action=dst-nat to-addresses=10.99.0.3 to-ports=22 comment=DNAT-HQ-CORE-01
+          - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2204 protocol=tcp action=dst-nat to-addresses=10.99.0.4 to-ports=22 comment=DNAT-BRANCH-EDGE-01
+          - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2205 protocol=tcp action=dst-nat to-addresses=10.99.0.5 to-ports=22 comment=DNAT-BRANCH-CORE-01
+          - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2206 protocol=tcp action=dst-nat to-addresses=10.99.0.6 to-ports=22 comment=DNAT-MTK-01
+          - /ip firewall nat add chain=srcnat out-interface=bridgeLocal action=masquerade comment=SNAT-MASQUERADE-LAB
+
+    - name: 4. Validar accesibilidad interna hacia la subred OOB (10.99.0.0/24)
+      community.routeros.command:
+        commands:
+          - /ping 10.99.0.3 count=2
+          - /ping 10.99.0.4 count=2
+          - /ping 10.99.0.5 count=2
+          - /ping 10.99.0.6 count=2
+
+    - name: 5. Validar que los puertos DNAT externos responden desde el controlador
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ item }}"
+        timeout: 10
+      loop:
+        - 2203
+        - 2204
+        - 2205
+        - 2206
+      delegate_to: localhost
+
+    - name: 6. Desarmar Dead Man's Switch tras validación exitosa
+      community.routeros.command:
+        commands:
+          - /system scheduler remove [find name=SAFETY_REVERT]
+          - /file remove [find name="pre_hardening_safe.backup"]
+
+- name: Fase 2 - Habilitar agente RoMON en los routers del laboratorio
+  hosts: mikrotik_lab:!oob-master
+  gather_facts: false
+
+  tasks:
+    - name: Activar RoMON en el nodo
+      community.routeros.command:
+        commands:
+          - /tool romon set enabled=yes
