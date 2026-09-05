@@ -6,64 +6,56 @@ Laboratorio de infraestructura de red multisitio de alta disponibilidad sobre ha
 
 ## 1. Topología del Laboratorio
 
-### 1.1 Diagrama L2 / L3 y Plano de Datos
+### 1.1 Topología Física y Lógica
 
 ```mermaid
-flowchart TB
-    %% Estilos de Nodos
-    classDef router fill:#1f2937,stroke:#3b82f6,stroke-width:2px,color:#f9fafb;
-    classDef wan fill:#0f172a,stroke:#64748b,stroke-width:2px,color:#f8fafc;
-    classDef lan fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ecfdf5;
-    classDef vpn fill:#1e3a8a,stroke:#38bdf8,stroke-width:2px,stroke-dasharray: 4 4,color:#f0f9ff;
-    classDef mgmt fill:#312e81,stroke:#818cf8,stroke-width:1px,stroke-dasharray: 2 2,color:#e0e7ff;
+graph LR
+    classDef router fill:#1f2937,stroke:#3b82f6,stroke-width:2px,color:#f9fafb
+    classDef lan    fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ecfdf5
+    classDef cloud  fill:#0f172a,stroke:#64748b,stroke-width:2px,color:#f8fafc
+    classDef oob    fill:#312e81,stroke:#818cf8,stroke-width:1px,color:#e0e7ff
 
-    subgraph WAN_BLOCK ["Plano WAN & Overlay Cifrado"]
-        direction LR
-        WAN["Enlace WAN Directo<br/><b>198.51.100.0/30</b>"]:::wan
-        GRE["Túnel gre-vpn (IPsec HW)<br/><b>10.100.0.0/30</b>"]:::vpn
-    end
-
-    subgraph HQ_SITE ["Sede Central (HQ)"]
+    subgraph HQ ["🏢 Sede Central"]
         direction TB
-        HQ_EDGE["<b>hq-edge-01</b><br/>MikroTik hEX (RB750Gr3)<br/>Router-ID: 10.255.255.1"]:::router
-        HQ_CORE["<b>hq-core-01</b><br/>MikroTik hAP ac2<br/>Router-ID: 10.255.255.2"]:::router
-        LAN_HQ["LAN HQ (br-lan)<br/><b>10.10.0.1/24</b>"]:::lan
-
-        HQ_EDGE ===|"ether2 (.1) &harr; ether1 (.2)<br/>Tránsito HQ: 10.1.0.0/30<br/>Coste OSPF: 10"| HQ_CORE
-        HQ_CORE --- LAN_HQ
+        LAN_HQ["LAN · 10.10.0.0/24"]:::lan
+        HQ_CORE["hq-core-01\nhAP ac2 · RID 10.255.255.2"]:::router
+        HQ_EDGE["hq-edge-01\nhEX · RID 10.255.255.1"]:::router
+        LAN_HQ --- HQ_CORE
+        HQ_CORE -->|"10.1.0.0/30 · coste 10"| HQ_EDGE
     end
 
-    subgraph BRANCH_SITE ["Sucursal (Branch)"]
+    subgraph INTERNET ["☁️ WAN · 198.51.100.0/30"]
+        CLOUD(["Internet"]):::cloud
+    end
+
+    subgraph BRANCH ["🏪 Sucursal"]
         direction TB
-        BRANCH_EDGE["<b>branch-edge-01</b><br/>MikroTik hAP ac2<br/>Router-ID: 10.255.255.3"]:::router
-        BRANCH_CORE["<b>branch-core-01</b><br/>MikroTik hEX (RB750Gr3)<br/>Router-ID: 10.255.255.4"]:::router
-        LAN_BRANCH["LAN Branch (br-lan)<br/><b>10.30.0.1/24</b>"]:::lan
-
-        BRANCH_EDGE ===|"ether2 (.1) &harr; ether1 (.2)<br/>Tránsito Branch: 10.2.0.0/30<br/>Coste OSPF: 10"| BRANCH_CORE
-        BRANCH_CORE --- LAN_BRANCH
+        BR_EDGE["branch-edge-01\nhAP ac2 · RID 10.255.255.3"]:::router
+        BR_CORE["branch-core-01\nhEX · RID 10.255.255.4"]:::router
+        LAN_BR["LAN · 10.30.0.0/24"]:::lan
+        BR_EDGE -->|"10.2.0.0/30 · coste 10"| BR_CORE
+        BR_CORE --- LAN_BR
     end
 
-    %% Conexiones WAN
-    HQ_EDGE ===|ether1: 198.51.100.1| WAN
-    WAN ===|ether1: 198.51.100.2| BRANCH_EDGE
+    %% Camino primario — enlace WAN físico
+    HQ_EDGE -->|"ether1 · .1"| CLOUD
+    CLOUD -->|"ether1 · .2"| BR_EDGE
 
-    %% Overlay VPN
-    HQ_EDGE -.->|10.100.0.1| GRE
-    GRE -.->|10.100.0.2| BRANCH_EDGE
+    %% Camino primario — túnel GRE/IPsec sobre WAN
+    HQ_EDGE -.->|"gre-vpn · IPsec HW\n10.100.0.0/30 · coste 10"| BR_EDGE
 
-    %% Enlace Privado Standby
-    HQ_CORE ===|"ether2 (.1) &harr; ether2 (.2)<br/>Línea Privada Directa: 10.255.0.0/30<br/>Coste OSPF: 50 (Standby)"| BRANCH_CORE
+    %% Camino de respaldo — línea privada directa
+    HQ_CORE ==>|"ether2 ↔ ether2 · 10.255.0.0/30\ncoste 50 · STANDBY"| BR_CORE
 
-    %% Plano OOB
-    subgraph OOB_MGMT ["Plano Fuera de Banda (OOB Management - 10.99.0.0/24)"]
-        BASTION["<b>oob-master</b><br/>192.168.1.210 &harr; 10.99.0.1"]:::mgmt
+    %% Plano de gestión OOB
+    subgraph OOB ["🔧 Gestión Fuera de Banda · 10.99.0.0/24"]
+        BASTION["oob-master\n192.168.1.210 ↔ 10.99.0.1"]:::oob
     end
 
-    HQ_EDGE -.-|"ether5: 10.99.0.6 (Port 2206)"| BASTION
-    HQ_CORE -.-|"ether5: 10.99.0.3 (Port 2203)"| BASTION
-    BRANCH_EDGE -.-|"ether5: 10.99.0.4 (Port 2204)"| BASTION
-    BRANCH_CORE -.-|"ether5: 10.99.0.5 (Port 2205)"| BASTION
-
+    HQ_EDGE -.-|"ether5 · :2206"| BASTION
+    HQ_CORE -.-|"ether5 · :2203"| BASTION
+    BR_EDGE -.-|"ether5 · :2204"| BASTION
+    BR_CORE -.-|"ether5 · :2205"| BASTION
 ```
 
 ---
@@ -168,26 +160,40 @@ El plano de control corre OSPFv2 monoproceso en el área backbone `0.0.0.0` con 
 ### 3.1 Métricas de Ruta y Lógica de Failover
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Client as Tráfico LAN HQ (10.10.0.0/24)
-    participant HQ_C as hq-core-01
-    participant HQ_E as hq-edge-01
-    participant BR_E as branch-edge-01
-    participant BR_C as branch-core-01
+graph LR
+    classDef router  fill:#1f2937,stroke:#3b82f6,stroke-width:2px,color:#f9fafb
+    classDef lan     fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ecfdf5
+    classDef dead    fill:#1f2937,stroke:#ef4444,stroke-width:2px,stroke-dasharray:4 4,color:#fca5a5
 
-    Note over HQ_C,BR_C: ESTADO NORMAL (Camino Primario: Coste Acumulado = 30)
-    Client->>HQ_C: Envío de tráfico hacia 10.30.0.0/24
-    HQ_C->>HQ_E: Salto 1 via ether1 (Coste 10)
-    HQ_E->>BR_E: Salto 2 via gre-vpn / IPsec HW (Coste 10)
-    BR_E->>BR_C: Salto 3 via ether2 (Coste 10)
-    Note over HQ_C,BR_C: Línea privada ether2 (Coste 50) permanece en standby
+    subgraph NORMAL ["✅ Estado Normal — Camino Primario (Coste 30)"]
+        direction LR
+        N_SRC["LAN HQ\n10.10.0.0/24"]:::lan
+        N_CORE["hq-core-01"]:::router
+        N_EDGE["hq-edge-01"]:::router
+        N_TEDGE["branch-edge-01"]:::router
+        N_TCORE["branch-core-01"]:::router
+        N_DST["LAN Sucursal\n10.30.0.0/24"]:::lan
 
-    Note over HQ_E,BR_E: CAÍDA DE LA WAN PRIMARIA (ether1 down / túnel caído)
-    HQ_C->>HQ_C: OSPF SPF recalculado: Túnel inalcanzable
-    HQ_C->>BR_C: FAILOVER DIRECTO: Salto 1 via ether2 Leased Line (Coste 50)
-    Note over HQ_C,BR_C: Convergencia inmediata en 1 solo salto (0.3 ms)
+        N_SRC --> N_CORE
+        N_CORE -->|"coste 10"| N_EDGE
+        N_EDGE -->|"GRE/IPsec HW · coste 10"| N_TEDGE
+        N_TEDGE -->|"coste 10"| N_TCORE
+        N_TCORE --> N_DST
+    end
 
+    subgraph FAILOVER ["⚡ Caída WAN — Camino de Respaldo (Coste 50)"]
+        direction LR
+        F_SRC["LAN HQ\n10.10.0.0/24"]:::lan
+        F_CORE["hq-core-01"]:::router
+        F_EDGE["hq-edge-01 ✖"]:::dead
+        F_TCORE["branch-core-01"]:::router
+        F_DST["LAN Sucursal\n10.30.0.0/24"]:::lan
+
+        F_SRC --> F_CORE
+        F_CORE -->|"Línea Privada ether2\ncoste 50 · 1 salto · 0.3 ms"| F_TCORE
+        F_TCORE --> F_DST
+        F_CORE -.-x|"túnel caído"| F_EDGE
+    end
 ```
 
 $$\text{Coste Primario (VPN)} = 10\ (\text{Tránsito HQ}) + 10\ (\text{Túnel GRE}) + 10\ (\text{Tránsito Branch}) = \mathbf{30}$$
