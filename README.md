@@ -8,7 +8,11 @@ High-availability multi-site network infrastructure lab running on physical Mikr
 
 ### 1.1 Physical & Logical Topology
 
-![Physical & Logical Topology](docs/img/network_topology.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/network_topology_dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/img/network_topology_light.png">
+  <img alt="Physical & Logical Topology" src="docs/img/network_topology_dark.png">
+</picture>
 
 <details>
 <summary>View interactive Mermaid diagram</summary>
@@ -88,7 +92,11 @@ The control plane runs single-process OSPFv2 in backbone area `0.0.0.0` with opt
 
 ### 3.1 Route Metrics and Failover Logic
 
-![OSPF Route Comparison - Normal vs Failover](docs/img/ospf_failover.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/ospf_failover_dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/img/ospf_failover_light.png">
+  <img alt="OSPF Route Comparison - Normal vs Failover" src="docs/img/ospf_failover_dark.png">
+</picture>
 
 <details>
 <summary>View interactive Mermaid diagram</summary>
