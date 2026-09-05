@@ -8,6 +8,11 @@ Laboratorio de infraestructura de red multisitio de alta disponibilidad sobre ha
 
 ### 1.1 Topología Física y Lógica
 
+![Topología Física y Lógica](docs/img/topologia_red.png)
+
+<details>
+<summary>Ver diagrama Mermaid interactivo</summary>
+
 ```mermaid
 graph LR
     classDef router fill:#1f2937,stroke:#3b82f6,stroke-width:2px,color:#f9fafb
@@ -57,6 +62,8 @@ graph LR
     BR_EDGE -.-|"ether5 · :2204"| BASTION
     BR_CORE -.-|"ether5 · :2205"| BASTION
 ```
+
+</details>
 
 ---
 
@@ -159,6 +166,11 @@ El plano de control corre OSPFv2 monoproceso en el área backbone `0.0.0.0` con 
 
 ### 3.1 Métricas de Ruta y Lógica de Failover
 
+![Comparativa de Rutas OSPF - Normal vs Failover](docs/img/failover_ospf.png)
+
+<details>
+<summary>Ver diagrama Mermaid interactivo</summary>
+
 ```mermaid
 graph LR
     classDef router  fill:#1f2937,stroke:#3b82f6,stroke-width:2px,color:#f9fafb
@@ -195,6 +207,8 @@ graph LR
         F_CORE -.-x|"túnel caído"| F_EDGE
     end
 ```
+
+</details>
 
 $$\text{Coste Primario (VPN)} = 10\ (\text{Tránsito HQ}) + 10\ (\text{Túnel GRE}) + 10\ (\text{Tránsito Branch}) = \mathbf{30}$$
 
@@ -341,3 +355,29 @@ Flags: H - hw-aead, A - AH, E - ESP
  1 10.30.0.1        0%    3 0.3ms   0.3   0.3   0.3
 
 ```
+
+---
+
+## 7. Actualización y Ciclo de Vida de Nodos (`upgrade_nodes.yaml`)
+
+Para mantener todo el parque de routers al día minimizando riesgos operativos y sin interrumpir la gestión OOB ni el plano de datos, se utiliza el playbook automatizado de actualización secuencial.
+
+### 7.1 Arquitectura y Flujo de Actualización
+
+```
+[1. Recopilación Facturas/Versiones] -> [2. Descarga Local .npk en WSL] -> [3. Upgrade Secuencial Nodos Lab (serial: 1)] -> [4. Upgrade OOB-Master (Último)] -> [5. Auditoría Final]
+```
+
+* **Descarga centralizada y aislamiento OOB:** Como los nodos del laboratorio operan en una red aislada sin resolución DNS externa, el controlador Ansible (WSL) descarga los paquetes `.npk` oficiales de MikroTik para cada arquitectura (`arm`, `mmips`, `mipsbe`) y los distribuye vía SCP hacia la memoria raíz de cada equipo.
+* **Preservación estricta de conectividad:** El bastión `oob-master` actúa como pasarela DNAT hacia los nodos del lab. Para evitar desconexiones globales, los 4 nodos de laboratorio se actualizan secuencialmente uno a uno (`serial: 1`), verificando que cada router reinicie, restablezca su puerto SSH y confirme operatividad antes de continuar. `oob-master` se actualiza únicamente al final.
+* **Alineación de Firmware RouterBOARD:** Tras validar el arranque con la nueva versión de RouterOS, el playbook verifica si `current-firmware` difiere de `upgrade-firmware` y ejecuta la actualización del bootloader en la memoria EEPROM.
+
+### 7.2 Ejecución del Playbook
+
+```bash
+# Ejecutar actualización con la versión por defecto (6.49.21)
+ansible-playbook -i hosts.yaml upgrade_nodes.yaml
+
+# O especificando una versión objetivo personalizada
+ansible-playbook -i hosts.yaml upgrade_nodes.yaml -e "target_version=6.49.21"
+```
