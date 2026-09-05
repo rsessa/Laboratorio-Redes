@@ -71,89 +71,11 @@ graph LR
 
 | Nodo | Rol | Modelo | Interfaz | Dirección IP | Función / Tráfico |
 | --- | --- | --- | --- | --- | --- |
-| **hq-edge-01** | WAN Gateway HQ | hEX | `ether1`<br>
-
-<br>`ether2`<br>
-
-<br>`gre-vpn`<br>
-
-<br>`ether5` | `198.51.100.1/30`<br>
-
-<br>`10.1.0.1/30`<br>
-
-<br>`10.100.0.1/30`<br>
-
-<br>`10.99.0.6/24` | WAN Pública Directa<br>
-
-<br>Tránsito hacia HQ Core<br>
-
-<br>Punto a Punto Túnel GRE/IPsec<br>
-
-<br>Gestión OOB (Port Forward 2206) |
-| **hq-core-01** | Distribución / LAN | hAP ac2 | `ether1`<br>
-
-<br>`ether2`<br>
-
-<br>`br-lan`<br>
-
-<br>`ether5` | `10.1.0.2/30`<br>
-
-<br>`10.255.0.1/30`<br>
-
-<br>`10.10.0.1/24`<br>
-
-<br>`10.99.0.3/24` | Tránsito hacia HQ Edge<br>
-
-<br>Línea Privada Respaldo (Core-to-Core)<br>
-
-<br>Gateway Usuarios HQ (OSPF Pasivo)<br>
-
-<br>Gestión OOB (Port Forward 2203) |
-| **branch-edge-01** | WAN Gateway Branch | hAP ac2 | `ether1`<br>
-
-<br>`ether2`<br>
-
-<br>`gre-vpn`<br>
-
-<br>`ether5` | `198.51.100.2/30`<br>
-
-<br>`10.2.0.1/30`<br>
-
-<br>`10.100.0.2/30`<br>
-
-<br>`10.99.0.4/24` | WAN Pública Directa<br>
-
-<br>Tránsito hacia Branch Core<br>
-
-<br>Punto a Punto Túnel GRE/IPsec<br>
-
-<br>Gestión OOB (Port Forward 2204) |
-| **branch-core-01** | Distribución / LAN | hEX | `ether1`<br>
-
-<br>`ether2`<br>
-
-<br>`br-lan`<br>
-
-<br>`ether5` | `10.2.0.2/30`<br>
-
-<br>`10.255.0.2/30`<br>
-
-<br>`10.30.0.1/24`<br>
-
-<br>`10.99.0.5/24` | Tránsito hacia Branch Edge<br>
-
-<br>Línea Privada Respaldo (Core-to-Core)<br>
-
-<br>Gateway Usuarios Branch (OSPF Pasivo)<br>
-
-<br>Gestión OOB (Port Forward 2205) |
-| **oob-master** | Bastión OOB / NAT | RouterOS | `ether1`<br>
-
-<br>`ether2-5` | `192.168.1.210/24`<br>
-
-<br>`10.99.0.1/24` | Uplink hacia LAN local y Ansible<br>
-
-<br>Plano aislado de gestión y NAT TZSP |
+| **hq-edge-01** | WAN Gateway HQ | hEX | `ether1`<br>`ether2`<br>`gre-vpn`<br>`ether5` | `198.51.100.1/30`<br>`10.1.0.1/30`<br>`10.100.0.1/30`<br>`10.99.0.6/24` | WAN Pública Directa<br>Tránsito hacia HQ Core<br>Punto a Punto Túnel GRE/IPsec<br>Gestión OOB (Port Forward 2206) |
+| **hq-core-01** | Distribución / LAN | hAP ac2 | `ether1`<br>`ether2`<br>`br-lan`<br>`ether5` | `10.1.0.2/30`<br>`10.255.0.1/30`<br>`10.10.0.1/24`<br>`10.99.0.3/24` | Tránsito hacia HQ Edge<br>Línea Privada Respaldo (Core-to-Core)<br>Gateway Usuarios HQ (OSPF Pasivo)<br>Gestión OOB (Port Forward 2203) |
+| **branch-edge-01** | WAN Gateway Branch | hAP ac2 | `ether1`<br>`ether2`<br>`gre-vpn`<br>`ether5` | `198.51.100.2/30`<br>`10.2.0.1/30`<br>`10.100.0.2/30`<br>`10.99.0.4/24` | WAN Pública Directa<br>Tránsito hacia Branch Core<br>Punto a Punto Túnel GRE/IPsec<br>Gestión OOB (Port Forward 2204) |
+| **branch-core-01** | Distribución / LAN | hEX | `ether1`<br>`ether2`<br>`br-lan`<br>`ether5` | `10.2.0.2/30`<br>`10.255.0.2/30`<br>`10.30.0.1/24`<br>`10.99.0.5/24` | Tránsito hacia Branch Edge<br>Línea Privada Respaldo (Core-to-Core)<br>Gateway Usuarios Branch (OSPF Pasivo)<br>Gestión OOB (Port Forward 2205) |
+| **oob-master** | Bastión OOB / NAT | RouterOS | `ether1`<br>`ether2-5` | `192.168.1.210/24`<br>`10.99.0.1/24` | Uplink hacia LAN local y Ansible<br>Plano aislado de gestión y NAT TZSP |
 
 ---
 
