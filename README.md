@@ -8,6 +8,11 @@ High-availability multi-site network infrastructure lab running on physical Mikr
 
 ### 1.1 Physical & Logical Topology
 
+![Physical & Logical Topology](docs/img/network_topology.png)
+
+<details>
+<summary>View interactive Mermaid diagram</summary>
+
 ```mermaid
 graph LR
     classDef router fill:#1f2937,stroke:#3b82f6,stroke-width:2px,color:#f9fafb
@@ -58,6 +63,8 @@ graph LR
     BR_CORE -.-|"ether5 · :2205"| BASTION
 ```
 
+</details>
+
 ---
 
 ## 2. Addressing Plan and Inventory
@@ -80,6 +87,11 @@ The control plane runs single-process OSPFv2 in backbone area `0.0.0.0` with opt
 * **User interface isolation (`passive=yes`):** The `br-lan` bridges advertise client networks (`10.10.0.0/24` and `10.30.0.0/24`) as internal stub routes, blocking Hello packet emission to the outside.
 
 ### 3.1 Route Metrics and Failover Logic
+
+![OSPF Route Comparison - Normal vs Failover](docs/img/ospf_failover.png)
+
+<details>
+<summary>View interactive Mermaid diagram</summary>
 
 ```mermaid
 graph LR
@@ -117,6 +129,8 @@ graph LR
         F_CORE -.-x|"tunnel down"| F_EDGE
     end
 ```
+
+</details>
 
 $$\text{Primary Cost (VPN)} = 10\ (\text{HQ Transit}) + 10\ (\text{GRE Tunnel}) + 10\ (\text{Branch Transit}) = \mathbf{30}$$
 
