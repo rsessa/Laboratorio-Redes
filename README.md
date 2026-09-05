@@ -8,7 +8,11 @@ Laboratorio de infraestructura de red multisitio de alta disponibilidad sobre ha
 
 ### 1.1 Topología Física y Lógica
 
-![Topología Física y Lógica](docs/img/topologia_red.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/topologia_red_dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/img/topologia_red_light.png">
+  <img alt="Topología Física y Lógica" src="docs/img/topologia_red_dark.png">
+</picture>
 
 <details>
 <summary>Ver diagrama Mermaid interactivo</summary>
@@ -88,7 +92,11 @@ El plano de control corre OSPFv2 monoproceso en el área backbone `0.0.0.0` con 
 
 ### 3.1 Métricas de Ruta y Lógica de Failover
 
-![Comparativa de Rutas OSPF - Normal vs Failover](docs/img/failover_ospf.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/failover_ospf_dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/img/failover_ospf_light.png">
+  <img alt="Comparativa de Rutas OSPF - Normal vs Failover" src="docs/img/failover_ospf_dark.png">
+</picture>
 
 <details>
 <summary>Ver diagrama Mermaid interactivo</summary>
