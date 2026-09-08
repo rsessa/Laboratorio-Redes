@@ -1,6 +1,6 @@
 ---
 - name: Auditoria y extraccion de topologia de red
-  hosts: mikrotik_lab
+  hosts: all
   gather_facts: false
   tasks:
     - name: Obtener informacion del dispositivo
