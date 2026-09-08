@@ -1,0 +1,29 @@
+---
+# Valores por defecto para mikrotik_firewall
+dnat_rules: []
+# Ejemplo:
+#   - name: "DNAT-SSH-NODE1"
+#     in_interface: "ether1"
+#     dst_port: 2201
+#     protocol: "tcp"
+#     to_address: "10.99.0.10"
+#     to_port: 22
+
+snat_rules: []
+# Ejemplo:
+#   - name: "SNAT-MASQ-OOB"
+#     chain: "srcnat"
+#     out_interface: "ether5"
+#     action: "masquerade"
+
+firewall_input_rules: []
+# Ejemplo:
+#   - name: "MGMT-INPUT-ESTABLISHED"
+#     action: "accept"
+#     connection_state: "established,related"
+
+firewall_forward_rules: []
+# Ejemplo:
+#   - name: "MGMT-FWD-ESTABLISHED"
+#     action: "accept"
+#     connection_state: "established,related"

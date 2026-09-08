@@ -1,0 +1,17 @@
+---
+# =============================================================================
+# Playbook: collection/playbooks/deploy_site.yaml
+# Objetivo: Orquestador integral para despliegue de infraestructura MikroTik
+#           (Identidad, Bridges, Direccionamiento IP, Túneles GRE y OSPFv2)
+# =============================================================================
+
+- name: Despliegue Modular e Idempotente de Nodos de Red
+  hosts: "{{ target_hosts | default('mikrotik_lab:!oob-master') }}"
+  gather_facts: false
+
+  roles:
+    - role: ../roles/mikrotik_common
+    - role: ../roles/mikrotik_interfaces
+    - role: ../roles/mikrotik_ip
+    - role: ../roles/mikrotik_gre_ipsec
+    - role: ../roles/mikrotik_ospf

@@ -1,0 +1,24 @@
+---
+# Tareas principales del rol mikrotik_gre_ipsec
+
+- name: Reconciliar interfaces de túnel GRE con IPsec
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/interface gre find where name="{{ item.name }}"]] = 0) do={
+          /interface gre add name="{{ item.name }}"
+          local-address="{{ item.local_address }}"
+          remote-address="{{ item.remote_address }}"
+          ipsec-secret="{{ item.ipsec_secret }}"
+          allow-fast-path={{ 'yes' if (item.allow_fast_path | default(false)) else 'no' }}
+          comment="{{ item.comment | default('GRE-IPsec-VPN') }}"
+        } else={
+          /interface gre set [find name="{{ item.name }}"]
+          local-address="{{ item.local_address }}"
+          remote-address="{{ item.remote_address }}"
+          ipsec-secret="{{ item.ipsec_secret }}"
+          allow-fast-path={{ 'yes' if (item.allow_fast_path | default(false)) else 'no' }}
+          comment="{{ item.comment | default('GRE-IPsec-VPN') }}"
+        }
+  loop: "{{ gre_tunnels }}"
+  when: gre_tunnels is defined and gre_tunnels | length > 0

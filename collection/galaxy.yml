@@ -1,0 +1,28 @@
+### Declaración de Manifiesto de Colección Ansible
+namespace: rsessa
+name: routeros_ops
+version: 1.0.0
+readme: README.md
+authors:
+  - Richard Sessa
+
+description: Colección modular, universal e idempotente para automatización de MikroTik RouterOS en entornos de red física, virtual y de laboratorio.
+
+license:
+  - MIT
+
+tags:
+  - mikrotik
+  - routeros
+  - networking
+  - ospf
+  - ipsec
+  - gre
+  - idempotency
+
+dependencies:
+  "community.routeros": ">=2.15.0"
+  "community.crypto": ">=2.15.0"
+
+repository: https://github.com/rsessa/Laboratorio-Redes
+documentation: https://github.com/rsessa/Laboratorio-Redes/blob/main/collection/README.md

@@ -1,0 +1,35 @@
+---
+# Tareas principales del rol mikrotik_ip
+
+- name: Reconciliar direccionamiento IP en interfaces
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/ip address find where address="{{ item.address }}" and interface="{{ item.interface }}"]] = 0) do={
+          /ip address add address="{{ item.address }}" interface="{{ item.interface }}" comment="{{ item.comment | default('') }}"
+        } else={
+          /ip address set [find address="{{ item.address }}" and interface="{{ item.interface }}"] comment="{{ item.comment | default('') }}"
+        }
+  loop: "{{ ip_addresses }}"
+  when: ip_addresses is defined and ip_addresses | length > 0
+
+- name: Reconciliar ruta por defecto
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/ip route find where dst-address="0.0.0.0/0" and gateway="{{ default_gateway }}"]] = 0) do={
+          /ip route add dst-address=0.0.0.0/0 gateway="{{ default_gateway }}" comment="DEFAULT-GW"
+        }
+  when: default_gateway is defined and default_gateway | length > 0
+
+- name: Reconciliar rutas estáticas adicionales
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/ip route find where dst-address="{{ item.dst_address }}" and gateway="{{ item.gateway }}"]] = 0) do={
+          /ip route add dst-address="{{ item.dst_address }}" gateway="{{ item.gateway }}" comment="{{ item.comment | default('') }}"
+        } else={
+          /ip route set [find dst-address="{{ item.dst_address }}" and gateway="{{ item.gateway }}"] comment="{{ item.comment | default('') }}"
+        }
+  loop: "{{ static_routes }}"
+  when: static_routes is defined and static_routes | length > 0

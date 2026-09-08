@@ -1,0 +1,12 @@
+---
+# =============================================================================
+# Playbook: collection/playbooks/restore.yaml
+# Objetivo: Restauración controlada de respaldos binarios en routers MikroTik
+# =============================================================================
+
+- name: Restauración Modular de Nodos MikroTik
+  hosts: "{{ target_hosts | default('mikrotik_lab:!oob-master') }}"
+  gather_facts: false
+
+  roles:
+    - role: ../roles/mikrotik_restore

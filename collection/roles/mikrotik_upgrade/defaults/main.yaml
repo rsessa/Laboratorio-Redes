@@ -1,0 +1,6 @@
+---
+# Valores por defecto para mikrotik_upgrade
+target_version: "7.18"
+download_base_dir: "downloads/routeros"
+ssh_key_path: "{{ ansible_ssh_private_key_file | default(lookup('env', 'HOME') ~ '/.ssh/id_rsa') }}"
+reboot_timeout: 300

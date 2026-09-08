@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: Richard Sessa
+  description: Gestión declarativa de direccionamiento IP y rutas estáticas en RouterOS.
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: RouterOS
+      versions:
+        - all
+dependencies: []

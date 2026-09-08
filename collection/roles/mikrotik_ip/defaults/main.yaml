@@ -1,0 +1,15 @@
+---
+# Valores por defecto para mikrotik_ip
+ip_addresses: []
+# Ejemplo:
+#   - address: "192.168.1.10/24"
+#     interface: "ether1"
+#     comment: "WAN"
+
+default_gateway: ""
+
+static_routes: []
+# Ejemplo:
+#   - dst_address: "10.0.0.0/8"
+#     gateway: "192.168.1.1"
+#     comment: "Ruta Corporativa"

@@ -1,0 +1,48 @@
+---
+# Tareas principales del rol mikrotik_interfaces
+
+- name: Reconciliar interfaces Bridge
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/interface bridge find where name="{{ item.name }}"]] = 0) do={
+          /interface bridge add name="{{ item.name }}" comment="{{ item.comment | default('Managed by Ansible') }}"
+        } else={
+          /interface bridge set [find name="{{ item.name }}"] comment="{{ item.comment | default('Managed by Ansible') }}"
+        }
+  loop: "{{ bridges }}"
+  when: bridges is defined and bridges | length > 0
+
+- name: Reconciliar puertos miembros de los Bridges
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/interface bridge port find where bridge="{{ item.0.name }}" and interface="{{ item.1 }}"]] = 0) do={
+          /interface bridge port add bridge="{{ item.0.name }}" interface="{{ item.1 }}"
+        }
+  loop: "{{ bridges | subelements('ports', skip_missing=True) }}"
+  when: bridges is defined and bridges | length > 0
+
+- name: Asegurar estado deshabilitado en interfaces designadas
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/interface ethernet find where name="{{ item }}"]] > 0) do={
+          :if ([/interface ethernet get [find name="{{ item }}"] disabled] != true) do={
+            /interface ethernet set [find name="{{ item }}"] disabled=yes comment="UNUSED-ISOLATED"
+          }
+        }
+  loop: "{{ disabled_interfaces }}"
+  when: disabled_interfaces is defined and disabled_interfaces | length > 0
+
+- name: Asegurar estado habilitado en interfaces operativas
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/interface ethernet find where name="{{ item }}"]] > 0) do={
+          :if ([/interface ethernet get [find name="{{ item }}"] disabled] != false) do={
+            /interface ethernet set [find name="{{ item }}"] disabled=no
+          }
+        }
+  loop: "{{ enabled_interfaces }}"
+  when: enabled_interfaces is defined and enabled_interfaces | length > 0

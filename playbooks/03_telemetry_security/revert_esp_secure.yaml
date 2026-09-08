@@ -1,0 +1,12 @@
+---
+- name: Revertir ESP a cifrado seguro (AES-256)
+  hosts: 'mikrotik_lab:!bastion-oob'
+  gather_facts: false
+
+  tasks:
+    - name: Restaurar Proposal a AES-256-CBC con SHA-256
+      community.routeros.command:
+        commands:
+          - /ip/ipsec/proposal/set [find] enc-algorithms=aes-256-cbc auth-algorithms=sha256
+          - /ip/ipsec/active-peers/remove [find]
+          - /ip/ipsec/installed-sa/flush

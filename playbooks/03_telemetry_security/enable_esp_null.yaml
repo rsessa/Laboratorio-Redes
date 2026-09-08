@@ -1,0 +1,27 @@
+---
+- name: Habilitar ESP NULL en el laboratorio para analisis de paquetes
+  hosts: 'mikrotik_lab:!bastion-oob'
+  gather_facts: false
+
+  tasks:
+    - name: 1. Configurar Proposal con cifrado NULL e integridad SHA-256
+      community.routeros.command:
+        commands:
+          # Se aplica a todas las proposals existentes en el router
+          - /ip/ipsec/proposal/set [find] enc-algorithms=null auth-algorithms=sha256
+
+    - name: 2. Purgar SAs y peers activos para forzar renegociacion inmediata
+      community.routeros.command:
+        commands:
+          - /ip/ipsec/active-peers/remove [find]
+          - /ip/ipsec/installed-sa/flush
+
+    - name: 3. Verificar estado de la Proposal en RouterOS v7
+      community.routeros.command:
+        commands:
+          - /ip/ipsec/proposal/print
+      register: proposal_status
+
+    - name: Mostrar configuracion activa de Proposals
+      ansible.builtin.debug:
+        msg: "{{ proposal_status.stdout_lines[0] }}"

@@ -1,0 +1,15 @@
+---
+# =============================================================================
+# Playbook: collection/playbooks/setup_bastion.yaml
+# Objetivo: Aprovisionamiento modular de Pasarela/Bastión OOB y Cortafuegos
+# =============================================================================
+
+- name: Provisión Modular e Idempotente de Bastión OOB
+  hosts: "{{ target_hosts | default('bastion:oob-master') }}"
+  gather_facts: false
+
+  roles:
+    - role: ../roles/mikrotik_common
+    - role: ../roles/mikrotik_interfaces
+    - role: ../roles/mikrotik_ip
+    - role: ../roles/mikrotik_firewall

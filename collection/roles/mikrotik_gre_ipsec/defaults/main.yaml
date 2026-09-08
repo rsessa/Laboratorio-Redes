@@ -1,0 +1,10 @@
+---
+# Valores por defecto para mikrotik_gre_ipsec
+gre_tunnels: []
+# Ejemplo:
+#   - name: gre-vpn
+#     local_address: "198.51.100.1"
+#     remote_address: "198.51.100.2"
+#     ipsec_secret: "MiClaveSecreta"
+#     allow_fast_path: false
+#     comment: "VPN GRE IPsec"

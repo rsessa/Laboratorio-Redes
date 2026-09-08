@@ -1,0 +1,6 @@
+---
+# Valores por defecto para mikrotik_backup
+backup_base_dir: "backups"
+backup_timestamp: "{{ now(fmt='%Y%m%d_%H%M%S') }}"
+custom_backup_dir: ""
+ssh_private_key: "{{ ansible_ssh_private_key_file | default(lookup('env', 'HOME') ~ '/.ssh/id_rsa') }}"

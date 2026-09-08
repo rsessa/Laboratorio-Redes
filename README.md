@@ -1,6 +1,6 @@
 # Multi-Site MikroTik Lab: Redundant GRE/IPsec, OSPFv2 & Automated Telemetry
 
-Laboratorio de infraestructura de red multisitio de alta disponibilidad sobre hardware físico MikroTik (hEX y hAP ac2). Implementa una arquitectura distribuida con sede central (HQ) y sucursal (Branch), redundancia dinámica enrutada mediante OSPFv2, túneles cifrados GRE over IPsec con aceleración por hardware (SoC crypto engine), automatización declarativa con Ansible y telemetría de paquetes en tiempo real mediante streaming TZSP hacia Wireshark.
+Laboratorio de infraestructura de red multisitio de alta disponibilidad sobre hardware físico MikroTik (hEX y hAP ac2). Implementa una arquitectura distribuida con sede central (HQ) y sucursal (Branch), redundancia dinámica enrutada mediante OSPFv2, túneles cifrados GRE over IPsec con aceleración por hardware (SoC crypto engine), automatización declarativa con Ansible (playbooks organizados y colección modular) y telemetría de paquetes en tiempo real mediante streaming TZSP hacia Wireshark con análisis de cifrado ESP.
 
 ---
 
@@ -146,102 +146,139 @@ $$\text{Coste Respaldo (Línea Privada Directa)} = \mathbf{50}$$
 
 ---
 
-## 4. Estructura del Repositorio y Automatización
+## 4. Estructura del Repositorio
+
+El laboratorio está organizado en dos niveles de automatización: **Playbooks directos clasificados por función** y una **Colección modular de Ansible basada en roles**.
 
 ```text
 .
-├── backups/                     # Snapshots binarios generados automáticamente
-│   └── 20260903_123546/         # Snapshot de referencia base por nodo (.backup)
-├── group_vars/
-│   └── mikrotik_lab.yaml        # Variables globales de conexión RouterOS
-├── hosts.yaml                   # Inventario con mapeo de puertos y bastión
-├── deploy_topology.yaml         # Playbook de provisión integral (L2, L3, IPsec, OSPF)
-├── restore_nodes.yaml           # Playbook de rollback desatendido con :execute
-└── README.md                    # Documentación técnica del laboratorio
-
-```
-
-### 4.1 Despliegue de la Topología
-
-Aplica de forma idempotente el saneamiento de interfaces, desvinculación de puertos de datos del bridge, configuración de túneles IPsec acelerados por hardware y activación de OSPF:
-
-```bash
-ansible-playbook -i hosts.yaml deploy_topology.yaml
-
-```
-
-### 4.2 Restauración Desatendida (`restore_nodes.yaml`)
-
-En RouterOS, el comando interactivo `/system backup load` se cancela en sesiones SSH automatizadas (*Terminal is not prompting*). La restauración implementa la ejecución desacoplada en segundo plano con polling bidireccional de estados de socket:
-
-```yaml
-- name: Disparar restauración en segundo plano con :execute
-  community.routeros.command:
-    commands:
-      - ':execute {/system backup load name="restore.backup" password=""}'
-
-- name: Esperar a que el router corte la conexión (Reinicio físico en curso)
-  ansible.builtin.wait_for:
-    host: "{{ ansible_host }}"
-    port: "{{ ansible_port }}"
-    state: stopped
-    delay: 3
-    timeout: 30
-  delegate_to: localhost
-
-- name: Esperar a que el puerto SSH vuelva a responder
-  ansible.builtin.wait_for:
-    host: "{{ ansible_host }}"
-    port: "{{ ansible_port }}"
-    state: started
-    delay: 15
-    timeout: 120
-  delegate_to: localhost
-
+├── collection/                          # Colección Ansible estándar (rsessa.routeros_ops)
+│   ├── galaxy.yml                       # Manifiesto oficial de la colección
+│   ├── README.md                        # Documentación técnica de roles y playbooks modulares
+│   ├── playbooks/                       # Orquestadores modulares por rol
+│   │   ├── deploy_site.yaml             # Despliegue integral de routers
+│   │   ├── setup_bastion.yaml           # Provisión de Bastión y Firewall/NAT
+│   │   ├── backup.yaml                  # Extracción centralizada de backups
+│   │   ├── restore.yaml                 # Restauración de snapshots
+│   │   ├── upgrade.yaml                 # Actualización de ROS y bootloader
+│   │   └── audit.yaml                   # Auditoría de recursos y estado L2/L3
+│   └── roles/                           # Roles modulares desacoplados (9 roles)
+│       ├── mikrotik_common/             # Identidad, servicios de gestión y claves SSH
+│       ├── mikrotik_interfaces/         # Bridges, puertos y estado físico de interfaces
+│       ├── mikrotik_ip/                 # Direccionamiento IP y enrutamiento estático
+│       ├── mikrotik_gre_ipsec/          # Túneles GRE con cifrado IPsec acelerado
+│       ├── mikrotik_ospf/               # Instancias, Router-ID, áreas y redes OSPFv2
+│       ├── mikrotik_firewall/           # Firewall Filter y NAT no destructivos por comentario
+│       ├── mikrotik_backup/             # Respaldo .rsc y binario .backup con limpieza
+│       ├── mikrotik_restore/            # Rollback y verificación de arranque
+│       └── mikrotik_upgrade/            # Actualización idempotente y alineación de bootloader
+│
+├── playbooks/                           # Flujos de trabajo del laboratorio clasificados
+│   ├── 01_provisioning/                 # Provisión inicial y topología de red
+│   │   ├── deploy_ssh_keys.yaml         # Inyección de claves públicas SSH en los routers
+│   │   ├── setup_bastion_oob.yaml       # Hardening, DNAT y aislamiento de oob-master
+│   │   └── deploy_topology.yaml         # Despliegue de L2, L3, túneles GRE/IPsec y OSPF
+│   ├── 02_operations/                   # Mantenimiento y operaciones del día 2
+│   │   ├── backup_nodes.yaml            # Extracción de backups (.rsc y .backup)
+│   │   ├── restore_nodes.yaml           # Restauración desatendida con :execute y polling
+│   │   ├── upgrade_nodes.yaml           # Actualización secuencial de RouterOS y firmware
+│   │   └── discover_topology.yaml       # Auditoría profunda y extracción de configuración
+│   └── 03_telemetry_security/           # Telemetría, streaming TZSP e investigación IPsec
+│       ├── start_tzsp_streaming.yaml    # Inicia captura de tráfico y streaming TZSP
+│       ├── stop_tzsp_streaming.yaml     # Detiene captura y sniffer en el laboratorio
+│       ├── enable_esp_null.yaml         # Conmuta propuesta IPsec a cifrado NULL (inspección)
+│       └── revert_esp_secure.yaml       # Restaura cifrado fuerte AES-256-CBC con SHA-256
+│
+├── docs/                                # Diagramas interactivos y recursos gráficos
+├── generate_diagrams.py                 # Script generador de diagramas de red
+├── discover-inventory.sh                # Descubrimiento de vecinos MNDP y generación de inventario
+└── README.md                            # Guía técnica principal del proyecto
 ```
 
 ---
 
-## 5. Telemetría y Análisis de Paquetes (TZSP & Wireshark)
+## 5. Guía de Ejecución de Playbooks
 
-Para inspeccionar el tráfico de control y datos en tiempo real sin requerir interfaces de captura en los routers, se emplea **TZSP** (*TaZmen Sniffer Protocol*, UDP/37008).
+Todos los comandos se ejecutan desde la raíz del proyecto sobre el controlador Ansible (WSL / Ubuntu):
 
-### 5.1 Enrutamiento y NAT de Telemetría
+### 5.1 Aprovisionamiento Inicial (`playbooks/01_provisioning/`)
 
-El tráfico capturado por `hq-edge-01` (`10.99.0.6`) hacia la estación de análisis (`192.168.1.30`) atraviesa `oob-master` mediante enmascaramiento dinámico para evitar descarte por enrutamiento asimétrico en el host:
+```bash
+# 1. Desplegar claves SSH en todos los nodos
+ansible-playbook -i hosts.yaml playbooks/01_provisioning/deploy_ssh_keys.yaml
+
+# 2. Configurar y proteger el Bastión OOB (oob-master)
+ansible-playbook -i hosts.yaml playbooks/01_provisioning/setup_bastion_oob.yaml
+
+# 3. Desplegar la topología completa de red (L2, L3, GRE/IPsec y OSPF)
+ansible-playbook -i hosts.yaml playbooks/01_provisioning/deploy_topology.yaml
+```
+
+### 5.2 Operaciones y Mantenimiento (`playbooks/02_operations/`)
+
+```bash
+# Extracción de copias de seguridad (.rsc y .backup)
+ansible-playbook -i hosts.yaml playbooks/02_operations/backup_nodes.yaml
+
+# Restauración desatendida del último snapshot disponible
+ansible-playbook -i hosts.yaml playbooks/02_operations/restore_nodes.yaml
+
+# Actualización secuencial de RouterOS y bootloader RouterBOARD
+ansible-playbook -i hosts.yaml playbooks/02_operations/upgrade_nodes.yaml -e "target_version=7.18"
+
+# Auditoría y telemetría completa de configuración
+ansible-playbook -i hosts.yaml playbooks/02_operations/discover_topology.yaml
+```
+
+### 5.3 Telemetría y Análisis de Seguridad (`playbooks/03_telemetry_security/`)
+
+```bash
+# Iniciar streaming TZSP de tráfico hacia Wireshark
+ansible-playbook -i hosts.yaml playbooks/03_telemetry_security/start_tzsp_streaming.yaml -e "control_pc_ip=192.168.1.30"
+
+# Habilitar cifrado ESP NULL para inspeccionar paquetes internos OSPF/GRE en Wireshark
+ansible-playbook -i hosts.yaml playbooks/03_telemetry_security/enable_esp_null.yaml
+
+# Revertir propuesta IPsec a cifrado seguro (AES-256-CBC)
+ansible-playbook -i hosts.yaml playbooks/03_telemetry_security/revert_esp_secure.yaml
+
+# Detener el streaming TZSP
+ansible-playbook -i hosts.yaml playbooks/03_telemetry_security/stop_tzsp_streaming.yaml
+```
+
+---
+
+## 6. Telemetría y Análisis de Paquetes (TZSP & Wireshark)
+
+Para inspeccionar el tráfico de control y datos en tiempo real sin requerir interfaces de captura física en los routers, se emplea **TZSP** (*TaZmen Sniffer Protocol*, UDP/37008).
+
+### 6.1 Enrutamiento y NAT de Telemetría
+
+El tráfico capturado por los routers del lab hacia la estación de análisis (`192.168.1.30`) atraviesa `oob-master` mediante enmascaramiento dinámico para evitar descarte por enrutamiento asimétrico en el host:
 
 ```routeros
 # En oob-master:
 /ip firewall nat add chain=srcnat src-address=10.99.0.0/24 dst-address=192.168.1.0/24 action=masquerade comment="NAT-OOB-TO-PC"
-
 ```
 
-### 5.2 Modos de Captura
+### 6.2 Modos de Captura e Inspección de Seguridad
 
-* **Inspección de Tráfico en Claro (OSPF e ICMP en tránsito):**
-```routeros
-/tool sniffer set streaming-enabled=yes streaming-server=192.168.1.30 filter-interface=gre-vpn
-/tool sniffer start
+* **Inspección de Tráfico Cifrado en Producción (ESP & ISAKMP):**
+  Al capturar en la interfaz WAN (`ether1`), los paquetes del túnel GRE viajan encapsulados en ESP (protocolo IP 50).
+  *Filtro Wireshark:* `esp || isakmp`
 
-```
+* **Inspección de Carga Útil en Laboratorio (ESP NULL):**
+  Para auditar los paquetes OSPF Hellos, LSUs y cabeceras internas sin necesidad de claves de descifrado en Wireshark, se ejecuta `playbooks/03_telemetry_security/enable_esp_null.yaml`, que conmuta la proposal IPsec a `enc-algorithms=null auth-algorithms=sha256` y purga las SAs activas para forzar renegociación inmediata.
+  *Filtro Wireshark:* `ospf || icmp || gre`
 
-
-*Filtro Wireshark:* `ospf || icmp`
-* **Inspección de Encapsulado WAN y Cifrado IPsec (ESP & ISAKMP):**
-```routeros
-/tool sniffer set streaming-enabled=yes streaming-server=192.168.1.30 filter-interface=ether1
-/tool sniffer start
-
-```
-
-
-*Filtro Wireshark:* `esp || isakmp`
+* **Restauración de Cifrado Fuerte:**
+  Al concluir la sesión de captura y análisis, se ejecuta `playbooks/03_telemetry_security/revert_esp_secure.yaml`, restableciendo el cifrado `aes-256-cbc`.
 
 ---
 
-## 6. Verificación y Resultados Operativos
+## 7. Verificación y Resultados Operativos
 
-### 6.1 Aceleración Criptográfica Hardware
+### 7.1 Aceleración Criptográfica Hardware
 
 Confirmación de SA activas gestionadas por el motor criptográfico integrado (SoC crypto engine):
 
@@ -251,10 +288,9 @@ Flags: H - hw-aead, A - AH, E - ESP
  #    SPI         STATE  SRC-ADDRESS    DST-ADDRESS    AUTH-ALGORITHM  ENC-ALGORITHM  ENC-KEY-SIZE
  0 HE 0x05173CDF  mature 198.51.100.2   198.51.100.1   sha1            aes-cbc        256
  1 HE 0x0222DAE8  mature 198.51.100.1   198.51.100.2   sha1            aes-cbc        256
-
 ```
 
-### 6.2 Adyacencias OSPF
+### 7.2 Adyacencias OSPF
 
 ```text
 [admin@hq-edge-01] > /routing ospf neighbor print
@@ -262,10 +298,9 @@ Flags: H - hw-aead, A - AH, E - ESP
    dr-address=0.0.0.0 backup-dr-address=0.0.0.0 state="Full"
  1 instance=default router-id=10.255.255.2 address=10.1.0.2 interface=ether2 priority=1 
    dr-address=0.0.0.0 backup-dr-address=0.0.0.0 state="Full"
-
 ```
 
-### 6.3 Traza de Rutas Extremo a Extremo
+### 7.3 Traza de Rutas Extremo a Extremo
 
 * **Estado Normal (Túnel Cifrado - 3 saltos):**
 ```text
@@ -274,40 +309,11 @@ Flags: H - hw-aead, A - AH, E - ESP
  1 10.1.0.1         0%    3 0.4ms   0.4   0.3   0.5
  2 10.100.0.2       0%    3 0.8ms   0.8   0.7   0.9
  3 10.30.0.1        0%    3 0.9ms   0.9   0.8   1.0
-
 ```
-
 
 * **Estado Failover WAN Caída (Línea Privada Directa - 1 salto):**
 ```text
 [admin@hq-core-01] > /tool traceroute 10.30.0.1 src-address=10.10.0.1 use-dns=no count=3
  # ADDRESS        LOSS SENT  LAST   AVG  BEST WORST
  1 10.30.0.1        0%    3 0.3ms   0.3   0.3   0.3
-
 ```
-
----
-
-## 7. Actualización y Ciclo de Vida de Nodos (`upgrade_nodes.yaml`)
-
-Para mantener todo el parque de routers al día minimizando riesgos operativos y sin interrumpir la gestión OOB ni el plano de datos, se utiliza el playbook automatizado de actualización secuencial.
-
-### 7.1 Arquitectura y Flujo de Actualización
-
-```
-[1. Recopilación Facturas/Versiones] -> [2. Descarga Local .npk en WSL] -> [3. Upgrade Secuencial Nodos Lab (serial: 1)] -> [4. Upgrade OOB-Master (Último)] -> [5. Auditoría Final]
-```
-
-* **Descarga centralizada y aislamiento OOB:** Como los nodos del laboratorio operan en una red aislada sin resolución DNS externa, el controlador Ansible (WSL) descarga los paquetes `.npk` oficiales de MikroTik para cada arquitectura (`arm`, `mmips`, `mipsbe`) y los distribuye vía SCP hacia la memoria raíz de cada equipo.
-* **Preservación estricta de conectividad:** El bastión `oob-master` actúa como pasarela DNAT hacia los nodos del lab. Para evitar desconexiones globales, los 4 nodos de laboratorio se actualizan secuencialmente uno a uno (`serial: 1`), verificando que cada router reinicie, restablezca su puerto SSH y confirme operatividad antes de continuar. `oob-master` se actualiza únicamente al final.
-* **Alineación de Firmware RouterBOARD:** Tras validar el arranque con la nueva versión de RouterOS, el playbook verifica si `current-firmware` difiere de `upgrade-firmware` y ejecuta la actualización del bootloader en la memoria EEPROM.
-
-### 7.2 Ejecución del Playbook
-
-```bash
-# Ejecutar actualización con la versión por defecto (6.49.21)
-ansible-playbook -i hosts.yaml upgrade_nodes.yaml
-
-# O especificando una versión objetivo personalizada
-ansible-playbook -i hosts.yaml upgrade_nodes.yaml -e "target_version=6.49.21"
-```

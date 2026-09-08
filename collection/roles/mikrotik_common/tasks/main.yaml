@@ -1,0 +1,104 @@
+---
+# Tareas principales del rol mikrotik_common
+- name: Reconciliar identidad del sistema
+  community.routeros.command:
+    commands:
+      - ':if ([/system identity get name] != "{{ node_identity }}") do={ /system identity set name="{{ node_identity }}" }'
+
+- name: Deshabilitar servicios de administración no seguros
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/ip service find name="{{ item }}" and disabled=no]] > 0) do={
+          /ip service disable [find name="{{ item }}"]
+        }
+  loop: "{{ disabled_services }}"
+  when: disabled_services | length > 0
+
+- name: Habilitar y configurar puertos de servicios permitidos
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/ip service find name="{{ item.name }} and disabled=yes"]] > 0) do={
+          /ip service enable [find name="{{ item.name }}"]
+        }
+      - '/ip service set [find name="{{ item.name }}"] port={{ item.port }}'
+  loop: "{{ enabled_services }}"
+  when: enabled_services | length > 0
+
+- name: Reconciliar servidores DNS si están configurados
+  community.routeros.command:
+    commands:
+      - '/ip dns set servers="{{ dns_servers }}"'
+  when: dns_servers is defined and dns_servers | length > 0
+
+# -----------------------------------------------------------------------------
+# GESTIÓN IDEMPOTENTE DE CLAVES SSH
+# -----------------------------------------------------------------------------
+- name: Bloque de provisión de clave SSH autorizada
+  when: manage_ssh_keys | default(true)
+  vars:
+    effective_user: "{{ (ansible_user | default('admin')).split('+')[0] }}"
+    remote_key_filename: "key_{{ inventory_hostname | regex_replace('[^a-zA-Z0-9_-]', '_') }}.pub"
+    ssh_port: "{{ ansible_port | default(22) }}"
+  block:
+    - name: Asegurar existencia de clave SSH en el nodo de control
+      community.crypto.openssh_keypair:
+        path: "{{ ssh_key_path }}"
+        type: "{{ ssh_key_type }}"
+        size: "{{ ssh_key_size }}"
+        state: present
+      delegate_to: localhost
+      run_once: true
+
+    - name: Leer clave pública local
+      ansible.builtin.slurp:
+        src: "{{ ssh_pub_key_path }}"
+      register: _local_pubkey
+      delegate_to: localhost
+      run_once: true
+
+    - name: Consultar claves autorizadas existentes en el nodo
+      community.routeros.command:
+        commands:
+          - '/user ssh-keys print detail without-paging'
+      register: _installed_keys
+
+    - name: Evaluar si la clave ya está autorizada para el usuario
+      ansible.builtin.set_fact:
+        _key_present: >-
+          {{
+            effective_user in _installed_keys.stdout[0] and
+            ((_local_pubkey.content | b64decode | trim).split(' ')[-1] in _installed_keys.stdout[0] or
+             (_local_pubkey.content | b64decode | trim).split(' ')[1] in _installed_keys.stdout[0])
+          }}
+
+    - name: Desplegar clave SSH si no está autorizada
+      when: not _key_present
+      block:
+        - name: Transferir clave pública al router vía SCP
+          ansible.builtin.command: >
+            {% if ansible_password is defined and ansible_password | length > 0 %}
+            sshpass -p "{{ ansible_password }}"
+            {% endif %}
+            scp -P {{ ssh_port }}
+            -o StrictHostKeyChecking=no
+            -o UserKnownHostsFile=/dev/null
+            {{ ssh_pub_key_path }}
+            {{ effective_user }}@{{ ansible_host }}:{{ remote_key_filename }}
+          delegate_to: localhost
+          changed_when: true
+
+        - name: Importar clave pública en RouterOS
+          community.routeros.command:
+            commands:
+              - '/user ssh-keys import public-key-file={{ remote_key_filename }} user={{ effective_user }}'
+          register: _import_res
+          failed_when:
+            - _import_res.failed is defined and _import_res.failed
+            - "'already' not in (_import_res.msg | default(''))"
+
+        - name: Limpiar archivo de clave temporal en el router si aún existe
+          community.routeros.command:
+            commands:
+              - ':if ([:len [/file find name~"{{ remote_key_filename }}"]] > 0) do={ /file remove [find name~"{{ remote_key_filename }}"] }'
