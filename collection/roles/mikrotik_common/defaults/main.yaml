@@ -1,0 +1,27 @@
+---
+# Valores por defecto para mikrotik_common
+node_identity: "{{ inventory_hostname }}"
+
+# Gestión de servicios IP
+enabled_services:
+  - name: ssh
+    port: 22
+  - name: winbox
+    port: 8291
+
+disabled_services:
+  - telnet
+  - ftp
+  - www
+  - api
+  - api-ssl
+
+# Configuración de claves SSH
+manage_ssh_keys: true
+ssh_key_path: "{{ ansible_ssh_private_key_file | default(lookup('env', 'HOME') ~ '/.ssh/id_rsa') }}"
+ssh_pub_key_path: "{{ ssh_key_path }}.pub"
+ssh_key_type: rsa
+ssh_key_size: 4096
+
+# Servidores DNS (opcional)
+dns_servers: ""

@@ -1,0 +1,373 @@
+---
+# =============================================================================
+# Playbook: upgrade_nodes.yaml
+# Objetivo: Actualización secuencial, segura y sin pérdida de conectividad
+#           de todos los nodos MikroTik del laboratorio (incluido oob-master).
+# =============================================================================
+
+- name: Fase 1 - Recopilación de versiones, arquitecturas y estado de todos los nodos
+  hosts: all
+  gather_facts: false
+  vars:
+    target_version: "7.23.5"
+
+  tasks:
+    - name: 1.1 Consultar recursos del sistema (/system resource print)
+      community.routeros.command:
+        commands:
+          - /system resource print
+      register: sys_res
+
+    - name: 1.2 Consultar estado de RouterBOARD y firmware
+      community.routeros.command:
+        commands:
+          - /system routerboard print
+      register: rb_info
+
+    - name: 1.3 Parsear información del sistema y fijar facts
+      ansible.builtin.set_fact:
+        current_version: "{{ (sys_res.stdout[0] | regex_search('version:\\s*([0-9\\.]+)', '\\1'))[0] | default('unknown') | trim }}"
+        arch_name: "{{ (sys_res.stdout[0] | regex_search('architecture-name:\\s*(\\S+)', '\\1'))[0] | default('unknown') | trim }}"
+        board_name: "{{ (sys_res.stdout[0] | regex_search('board-name:\\s*(.+)', '\\1'))[0] | default('unknown') | trim }}"
+        rb_current_fw: "{{ (rb_info.stdout[0] | regex_search('current-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+        rb_upgrade_fw: "{{ (rb_info.stdout[0] | regex_search('upgrade-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+        target_version: "{{ target_version }}"
+
+    - name: 1.4 Determinar si el nodo requiere actualización de RouterOS
+      ansible.builtin.set_fact:
+        needs_upgrade: "{{ current_version != target_version }}"
+
+    - name: 1.5 Reportar estado inicial del nodo
+      ansible.builtin.debug:
+        msg: >-
+          Host: {{ inventory_hostname }} | Modelo: {{ board_name }} | Arch: {{ arch_name }} |
+          ROS Actual: {{ current_version }} -> Objetivo: {{ target_version }} |
+          ¿Actualizar?: {{ 'SI' if needs_upgrade else 'NO' }} |
+          Firmware: {{ rb_current_fw }} (Disp: {{ rb_upgrade_fw }})
+
+- name: Fase 2 - Descarga centralizada de paquetes RouterOS en el controlador local
+  hosts: localhost
+  gather_facts: false
+  vars:
+    target_version: "{{ hostvars[groups['all'][0]]['target_version'] | default('6.49.21') }}"
+    download_base_dir: "downloads/routeros"
+
+  tasks:
+    - name: 2.1 Identificar arquitecturas requeridas para los nodos que necesitan upgrade
+      ansible.builtin.set_fact:
+        required_archs: >-
+          {{
+            groups['all']
+            | map('extract', hostvars)
+            | selectattr('needs_upgrade', 'equalto', true)
+            | map(attribute='arch_name')
+            | unique
+            | list
+          }}
+
+    - name: 2.2 Mostrar arquitecturas a descargar
+      ansible.builtin.debug:
+        msg: "Arquitecturas necesarias para descarga: {{ required_archs }}"
+
+    - name: 2.3 Crear directorio local de almacenamiento de paquetes
+      ansible.builtin.file:
+        path: "{{ download_base_dir }}/{{ target_version }}"
+        state: directory
+        mode: "0755"
+      when: required_archs | length > 0
+
+    - name: 2.4 Descargar paquetes .npk oficiales desde download.mikrotik.com
+      ansible.builtin.get_url:
+        url: "https://download.mikrotik.com/routeros/{{ target_version }}/routeros-{{ item }}-{{ target_version }}.npk"
+        dest: "{{ download_base_dir }}/{{ target_version }}/routeros-{{ item }}-{{ target_version }}.npk"
+        mode: "0644"
+      loop: "{{ required_archs }}"
+      register: download_results
+      until: download_results is success
+      retries: 3
+      delay: 5
+      when: required_archs | length > 0
+
+- name: Fase 3 - Actualización secuencial de nodos del laboratorio (serial 1)
+  hosts: "mikrotik_lab:!oob-master"
+  serial: 1
+  gather_facts: false
+  vars:
+    target_version: "{{ hostvars[inventory_hostname]['target_version'] | default('6.49.21') }}"
+    download_base_dir: "downloads/routeros"
+    ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+    effective_user: "{{ ansible_user.split('+')[0] | default('admin') }}"
+
+  tasks:
+    - name: 3.1 Omitir si el nodo ya se encuentra en la versión objetivo
+      ansible.builtin.debug:
+        msg: "El nodo {{ inventory_hostname }} ya se encuentra en la versión {{ target_version }}. Omitiendo descarga y reinicio."
+      when: not needs_upgrade
+
+    - name: Bloque de actualización de RouterOS para nodos del laboratorio
+      when: needs_upgrade
+      block:
+        - name: 3.2 Generar backup binario de seguridad en almacenamiento local
+          community.routeros.command:
+            commands:
+              - /system backup save name=pre_upgrade.backup
+
+        - name: 3.3 Habilitar auto-upgrade de firmware en RouterBOARD
+          community.routeros.command:
+            commands:
+              - /system routerboard settings set auto-upgrade=yes
+
+        - name: 3.4 Transferir paquete .npk vía SCP al router
+          ansible.builtin.command: >
+            scp -P {{ ansible_port | default(22) }}
+            -o StrictHostKeyChecking=no
+            -o UserKnownHostsFile=/dev/null
+            -i {{ ssh_key_path }}
+            {{ download_base_dir }}/{{ target_version }}/routeros-{{ arch_name }}-{{ target_version }}.npk
+            {{ effective_user }}@{{ ansible_host }}:routeros-{{ arch_name }}-{{ target_version }}.npk
+          delegate_to: localhost
+          changed_when: true
+
+        - name: 3.5 Validar presencia del paquete .npk en el almacenamiento
+          community.routeros.command:
+            commands:
+              - /file print detail where name~"routeros"
+          register: pkg_check
+          failed_when: "'routeros' not in pkg_check.stdout[0]"
+
+        - name: 3.6 Ejecutar reinicio del router para instalar la versión nueva
+          community.routeros.command:
+            commands:
+              - ":execute { /system reboot }"
+          failed_when: false
+
+        - name: 3.7 Esperar a que el router reinicie y reabra el puerto de gestión
+          ansible.builtin.wait_for:
+            host: "{{ ansible_host }}"
+            port: "{{ ansible_port | default(22) }}"
+            state: started
+            delay: 25
+            timeout: 300
+          delegate_to: localhost
+
+        - name: 3.8 Validar reactivación del CLI y confirmar nueva versión
+          community.routeros.command:
+            commands:
+              - /system resource print
+          register: post_res
+          retries: 10
+          delay: 6
+          until: post_res is not failed
+
+        - name: 3.9 Verificar que la versión activa coincide con el objetivo
+          ansible.builtin.assert:
+            that:
+              - "target_version in post_res.stdout[0]"
+            fail_msg: "ERROR: El router no inició con la versión {{ target_version }}"
+            success_msg: "EXITO: Router {{ inventory_hostname }} operativo con versión {{ target_version }}"
+
+    - name: Bloque de alineación y actualización de firmware RouterBOARD
+      block:
+        - name: 3.10 Consultar estado actual del firmware RouterBOARD
+          community.routeros.command:
+            commands:
+              - /system routerboard print
+          register: rb_post
+
+        - name: 3.11 Extraer facts de firmware post-upgrade
+          ansible.builtin.set_fact:
+            fw_curr: "{{ (rb_post.stdout[0] | regex_search('current-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+            fw_upg: "{{ (rb_post.stdout[0] | regex_search('upgrade-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+
+        - name: 3.12 Actualizar firmware si existe versión más reciente
+          when: fw_curr != fw_upg and fw_upg != 'N/A'
+          block:
+            - name: Disparar upgrade de bootloader RouterBOARD
+              community.routeros.command:
+                commands:
+                  - ":execute { /system routerboard upgrade }"
+
+            - name: Pausa breve para garantizar escritura en EEPROM
+              ansible.builtin.pause:
+                seconds: 5
+
+            - name: Reiniciar router para aplicar firmware actualizado
+              community.routeros.command:
+                commands:
+                  - ":execute { /system reboot }"
+              failed_when: false
+
+            - name: Esperar a que el router reinicie tras el upgrade de firmware
+              ansible.builtin.wait_for:
+                host: "{{ ansible_host }}"
+                port: "{{ ansible_port | default(22) }}"
+                state: started
+                delay: 25
+                timeout: 300
+              delegate_to: localhost
+
+            - name: Validar CLI tras reinicio de firmware
+              community.routeros.command:
+                commands:
+                  - /system routerboard print
+              register: rb_final
+              retries: 10
+              delay: 6
+              until: rb_final is not failed
+
+- name: Fase 4 - Actualización del Bastión y Master OOB (oob-master)
+  hosts: oob-master
+  serial: 1
+  gather_facts: false
+  vars:
+    target_version: "{{ hostvars[inventory_hostname]['target_version'] | default('6.49.21') }}"
+    download_base_dir: "downloads/routeros"
+    ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+    effective_user: "{{ ansible_user.split('+')[0] | default('admin') }}"
+
+  tasks:
+    - name: 4.1 Omitir si oob-master ya se encuentra en la versión objetivo
+      ansible.builtin.debug:
+        msg: "El nodo oob-master ya se encuentra en la versión {{ target_version }}."
+      when: not needs_upgrade
+
+    - name: Bloque de actualización de oob-master
+      when: needs_upgrade
+      block:
+        - name: 4.2 Generar backup binario de seguridad en oob-master
+          community.routeros.command:
+            commands:
+              - /system backup save name=pre_upgrade.backup
+
+        - name: 4.3 Habilitar auto-upgrade de firmware en RouterBOARD
+          community.routeros.command:
+            commands:
+              - /system routerboard settings set auto-upgrade=yes
+
+        - name: 4.4 Transferir paquete .npk vía SCP a oob-master
+          ansible.builtin.command: >
+            scp -P {{ ansible_port | default(22) }}
+            -o StrictHostKeyChecking=no
+            -o UserKnownHostsFile=/dev/null
+            -i {{ ssh_key_path }}
+            {{ download_base_dir }}/{{ target_version }}/routeros-{{ arch_name }}-{{ target_version }}.npk
+            {{ effective_user }}@{{ ansible_host }}:routeros-{{ arch_name }}-{{ target_version }}.npk
+          delegate_to: localhost
+          changed_when: true
+
+        - name: 4.5 Validar presencia del paquete .npk en el almacenamiento
+          community.routeros.command:
+            commands:
+              - /file print detail where name~"routeros"
+          register: pkg_check_oob
+          failed_when: "'routeros' not in pkg_check_oob.stdout[0]"
+
+        - name: 4.6 Reiniciar oob-master para instalar actualización
+          community.routeros.command:
+            commands:
+              - ":execute { /system reboot }"
+          failed_when: false
+
+        - name: 4.7 Esperar a que oob-master reinicie y reabra el puerto SSH
+          ansible.builtin.wait_for:
+            host: "{{ ansible_host }}"
+            port: "{{ ansible_port | default(22) }}"
+            state: started
+            delay: 25
+            timeout: 300
+          delegate_to: localhost
+
+        - name: 4.8 Validar reactivación del CLI en oob-master
+          community.routeros.command:
+            commands:
+              - /system resource print
+          register: post_res_oob
+          retries: 10
+          delay: 6
+          until: post_res_oob is not failed
+
+        - name: 4.9 Confirmar que oob-master opera en la versión objetivo
+          ansible.builtin.assert:
+            that:
+              - "target_version in post_res_oob.stdout[0]"
+            fail_msg: "ERROR: oob-master no inició con la versión {{ target_version }}"
+            success_msg: "EXITO: oob-master operativo con versión {{ target_version }}"
+
+    - name: Bloque de actualización de firmware RouterBOARD en oob-master
+      block:
+        - name: 4.10 Consultar estado de firmware de oob-master
+          community.routeros.command:
+            commands:
+              - /system routerboard print
+          register: rb_post_oob
+
+        - name: 4.11 Extraer facts de firmware de oob-master
+          ansible.builtin.set_fact:
+            fw_curr_oob: "{{ (rb_post_oob.stdout[0] | regex_search('current-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+            fw_upg_oob: "{{ (rb_post_oob.stdout[0] | regex_search('upgrade-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+
+        - name: 4.12 Actualizar firmware en oob-master si difiere
+          when: fw_curr_oob != fw_upg_oob and fw_upg_oob != 'N/A'
+          block:
+            - name: Disparar upgrade de bootloader en oob-master
+              community.routeros.command:
+                commands:
+                  - ":execute { /system routerboard upgrade }"
+
+            - name: Pausa breve para escritura en EEPROM
+              ansible.builtin.pause:
+                seconds: 5
+
+            - name: Reiniciar oob-master para aplicar nuevo firmware
+              community.routeros.command:
+                commands:
+                  - ":execute { /system reboot }"
+              failed_when: false
+
+            - name: Esperar a que oob-master reinicie tras el upgrade de firmware
+              ansible.builtin.wait_for:
+                host: "{{ ansible_host }}"
+                port: "{{ ansible_port | default(22) }}"
+                state: started
+                delay: 25
+                timeout: 300
+              delegate_to: localhost
+
+            - name: Validar CLI de oob-master tras reinicio de firmware
+              community.routeros.command:
+                commands:
+                  - /system routerboard print
+              register: rb_final_oob
+              retries: 10
+              delay: 6
+              until: rb_final_oob is not failed
+
+- name: Fase 5 - Auditoría Final y Reporte de Estado Post-Actualización
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: 5.1 Obtener estado final de recursos
+      community.routeros.command:
+        commands:
+          - /system resource print
+      register: final_res
+
+    - name: 5.2 Obtener estado final de firmware
+      community.routeros.command:
+        commands:
+          - /system routerboard print
+      register: final_rb
+
+    - name: 5.3 Parsear valores consolidados
+      ansible.builtin.set_fact:
+        final_ver: "{{ (final_res.stdout[0] | regex_search('version:\\s*([0-9\\.]+)', '\\1'))[0] | default('unknown') | trim }}"
+        final_uptime: "{{ (final_res.stdout[0] | regex_search('uptime:\\s*(.+)', '\\1'))[0] | default('unknown') | trim }}"
+        final_fw: "{{ (final_rb.stdout[0] | regex_search('current-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+
+    - name: 5.4 Mostrar reporte individual consolidado
+      ansible.builtin.debug:
+        msg: >-
+          [STATUS OK] Host: {{ inventory_hostname }} |
+          Versión Previa: {{ current_version }} -> Versión Final: {{ final_ver }} |
+          Firmware: {{ final_fw }} | Uptime: {{ final_uptime }}

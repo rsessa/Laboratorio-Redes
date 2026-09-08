@@ -1,0 +1,148 @@
+---
+# Tareas principales del rol mikrotik_upgrade
+
+- name: Consultar recursos actuales del nodo
+  community.routeros.command:
+    commands:
+      - /system resource print
+  register: _sys_res
+
+- name: Consultar firmware RouterBOARD
+  community.routeros.command:
+    commands:
+      - /system routerboard print
+  register: _rb_info
+
+- name: Parsear versiones activas
+  ansible.builtin.set_fact:
+    _curr_ros: "{{ (_sys_res.stdout[0] | regex_search('version:\\s*([0-9\\.]+)', '\\1'))[0] | default('unknown') | trim }}"
+    _arch: "{{ (_sys_res.stdout[0] | regex_search('architecture-name:\\s*(\\S+)', '\\1'))[0] | default('unknown') | trim }}"
+    _curr_fw: "{{ (_rb_info.stdout[0] | regex_search('current-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+    _upg_fw: "{{ (_rb_info.stdout[0] | regex_search('upgrade-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+
+- name: Determinar si requiere actualización de RouterOS
+  ansible.builtin.set_fact:
+    _needs_ros_upgrade: "{{ _curr_ros != target_version }}"
+
+- name: Notificar omisión si la versión ya coincide
+  ansible.builtin.debug:
+    msg: "{{ inventory_hostname }} ya se encuentra en RouterOS {{ target_version }}. Omitiendo descarga e instalación."
+  when: not _needs_ros_upgrade
+
+- name: Bloque de actualización de RouterOS
+  when: _needs_ros_upgrade
+  vars:
+    ssh_port: "{{ ansible_port | default(22) }}"
+    target_user: "{{ (ansible_user | default('admin')).split('+')[0] }}"
+  block:
+    - name: Asegurar directorio local de descarga
+      ansible.builtin.file:
+        path: "{{ download_base_dir }}/{{ target_version }}"
+        state: directory
+        mode: "0755"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Descargar paquete oficial .npk desde MikroTik
+      ansible.builtin.get_url:
+        url: "https://download.mikrotik.com/routeros/{{ target_version }}/routeros-{{ _arch }}-{{ target_version }}.npk"
+        dest: "{{ download_base_dir }}/{{ target_version }}/routeros-{{ _arch }}-{{ target_version }}.npk"
+        mode: "0644"
+      delegate_to: localhost
+      register: _dl
+      until: _dl is success
+      retries: 3
+      delay: 5
+
+    - name: Crear snapshot de seguridad previo en el router
+      community.routeros.command:
+        commands:
+          - /system backup save name=pre_upgrade_snapshot
+
+    - name: Transferir archivo .npk al router vía SCP
+      ansible.builtin.command: >
+        scp -P {{ ssh_port }}
+        -o StrictHostKeyChecking=no
+        -o UserKnownHostsFile=/dev/null
+        {% if ssh_key_path is exists %}
+        -i {{ ssh_key_path }}
+        {% endif %}
+        {{ download_base_dir }}/{{ target_version }}/routeros-{{ _arch }}-{{ target_version }}.npk
+        {{ target_user }}@{{ ansible_host }}:routeros-{{ _arch }}-{{ target_version }}.npk
+      delegate_to: localhost
+      changed_when: true
+
+    - name: Reiniciar router para aplicar RouterOS
+      community.routeros.command:
+        commands:
+          - ":execute { /system reboot }"
+      failed_when: false
+
+    - name: Esperar reconexión tras reinicio
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ ssh_port }}"
+        state: started
+        delay: 25
+        timeout: "{{ reboot_timeout }}"
+      delegate_to: localhost
+
+    - name: Confirmar nueva versión de RouterOS
+      community.routeros.command:
+        commands:
+          - /system resource print
+      register: _post_res
+      retries: 10
+      delay: 6
+      until: _post_res is not failed
+
+    - name: Verificar versión instalada
+      ansible.builtin.assert:
+        that:
+          - "target_version in _post_res.stdout[0]"
+        fail_msg: "Fallo en actualización de {{ inventory_hostname }} a {{ target_version }}"
+
+# -----------------------------------------------------------------------------
+# ACTUALIZACIÓN DE BOOTLOADER ROUTERBOARD
+# -----------------------------------------------------------------------------
+- name: Bloque de actualización de bootloader RouterBOARD
+  block:
+    - name: Consultar estado de firmware actualizado
+      community.routeros.command:
+        commands:
+          - /system routerboard print
+      register: _rb_check
+
+    - name: Extraer firmware actual y disponible
+      ansible.builtin.set_fact:
+        _fw_now: "{{ (_rb_check.stdout[0] | regex_search('current-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+        _fw_avail: "{{ (_rb_check.stdout[0] | regex_search('upgrade-firmware:\\s*(\\S+)', '\\1'))[0] | default('N/A') | trim }}"
+
+    - name: Disparar upgrade de firmware si hay nueva versión
+      when: _fw_now != _fw_avail and _fw_avail != 'N/A'
+      vars:
+        ssh_port: "{{ ansible_port | default(22) }}"
+      block:
+        - name: Ejecutar comando de upgrade de bootloader
+          community.routeros.command:
+            commands:
+              - ":execute { /system routerboard upgrade }"
+
+        - name: Pausa para asegurar escritura en EEPROM
+          ansible.builtin.pause:
+            seconds: 5
+
+        - name: Reiniciar para consolidar firmware
+          community.routeros.command:
+            commands:
+              - ":execute { /system reboot }"
+          failed_when: false
+
+        - name: Esperar reconexión tras reinicio de firmware
+          ansible.builtin.wait_for:
+            host: "{{ ansible_host }}"
+            port: "{{ ssh_port }}"
+            state: started
+            delay: 25
+            timeout: "{{ reboot_timeout }}"
+          delegate_to: localhost

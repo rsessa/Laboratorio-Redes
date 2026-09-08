@@ -1,0 +1,116 @@
+---
+- name: Provisión y Hardening de Bastion-OOB (ether5 Dedicado a Switch OOB)
+  hosts: oob-master
+  gather_facts: false
+
+  tasks:
+    # --------------------------------------------------------------------------
+    # 1. SANEAMIENTO DE FÁBRICA Y SERVICIOS RESIDUALES
+    # --------------------------------------------------------------------------
+    - name: 1. Purgar servidores DHCP, pools e IPs de fábrica
+      community.routeros.command:
+        commands:
+          - /ip dhcp-server remove [find]
+          - /ip dhcp-server network remove [find]
+          - /ip pool remove [find name~"default|dhcp"]
+          - /ip dhcp-client remove [find interface!=ether1]
+          - /ip address remove [find address~"192.168.88."]
+
+    # --------------------------------------------------------------------------
+    # 2. IDENTIDAD, GESTIÓN Y ROMON
+    # --------------------------------------------------------------------------
+    - name: 2. Fijar identidad, RoMON y asegurar accesos de gestión
+      community.routeros.command:
+        commands:
+          - /system identity set name=bastion-oob
+          - /tool romon set enabled=yes
+          - /ip service disable [find name~"telnet|ftp|www|api"]
+          - /ip service enable [find name~"ssh|winbox"]
+          - /ip service set ssh port=22
+          - /ip service set winbox port=8291
+          - /ip neighbor discovery-settings set discover-interface-list=all
+          - /tool mac-server set allowed-interface-list=all
+          - /tool mac-server mac-winbox set allowed-interface-list=all
+
+    # --------------------------------------------------------------------------
+    # 3. AISLAMIENTO L2 (Eliminación de Bridges y Bloqueo de ether2-ether4)
+    # --------------------------------------------------------------------------
+    - name: 3. Desmantelar bridges y aislar puertos no utilizados
+      community.routeros.command:
+        commands:
+          # Eliminar cualquier puerto asignado a puentes
+          - /interface bridge port remove [find]
+          # Eliminar puentes residuales
+          - /interface bridge remove [find]
+          # Apagar interfaces no utilizadas en el bastión para aislamiento físico
+          - /interface ethernet set [find name=ether2] disabled=yes comment="UNUSED-ISOLATED"
+          - /interface ethernet set [find name=ether3] disabled=yes comment="UNUSED-ISOLATED"
+          - /interface ethernet set [find name=ether4] disabled=yes comment="UNUSED-ISOLATED"
+          # Habilitar ether5 como enlace exclusivo al switch OOB
+          - /interface ethernet set [find name=ether5] disabled=no comment="OOB-SWITCH-UPLINK"
+
+    # --------------------------------------------------------------------------
+    # 4. DIRECCIONAMIENTO IP Y ENRUTAMIENTO BASE
+    # --------------------------------------------------------------------------
+    - name: 4. Asignar direccionamiento OOB nativo en ether5 y Default Gateway
+      community.routeros.command:
+        commands:
+          - /ip address remove [find interface=ether5]
+          - /ip address add address=10.99.0.1/24 interface=ether5 comment="GATEWAY-OOB"
+          - /ip dns set servers=192.168.1.1,1.1.1.1
+          - /ip route remove [find dst-address=0.0.0.0/0]
+          - /ip route add dst-address=0.0.0.0/0 gateway=192.168.1.1 comment="DEFAULT-GW"
+
+    # --------------------------------------------------------------------------
+    # 5. POLÍTICAS NAT (DNAT Y TELEMETRÍA POR ether5)
+    # --------------------------------------------------------------------------
+    - name: 5. Configurar reglas de NAT perimetrales
+      community.routeros.command:
+        commands:
+          - /ip firewall nat remove [find]
+          # DNAT hacia los nodos del laboratorio
+          - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2203 protocol=tcp action=dst-nat to-addresses=10.99.0.3 to-ports=22 comment="DNAT-HQ-CORE-01"
+          - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2204 protocol=tcp action=dst-nat to-addresses=10.99.0.4 to-ports=22 comment="DNAT-BRANCH-EDGE-01"
+          - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2205 protocol=tcp action=dst-nat to-addresses=10.99.0.5 to-ports=22 comment="DNAT-BRANCH-CORE-01"
+          - /ip firewall nat add chain=dstnat in-interface=ether1 dst-port=2206 protocol=tcp action=dst-nat to-addresses=10.99.0.6 to-ports=22 comment="DNAT-HQ-EDGE-01"
+          # Telemetría TZSP: enmascarar tráfico de captura hacia la estación de análisis
+          - /ip firewall nat add chain=srcnat src-address=10.99.0.0/24 dst-address=192.168.1.0/24 out-interface=ether1 action=masquerade comment="NAT-OOB-TO-PC"
+          # Masquerade simétrico en ether5: asegura que los nodos respondan al bastión sin requerir default route
+          - /ip firewall nat add chain=srcnat out-interface=ether5 action=masquerade comment="SNAT-MASQUERADE-OOB"
+
+    # --------------------------------------------------------------------------
+    # 6. POLÍTICAS DE CORTAFUEGOS (Aislamiento Zero-Routing)
+    # --------------------------------------------------------------------------
+    - name: 6. Aplicar reglas de Firewall Filter
+      community.routeros.command:
+        commands:
+          - /ip firewall filter remove [find]
+          # Input (Gestión local de bastion-oob)
+          - /ip firewall filter add chain=input action=accept connection-state=established,related comment="MGMT-INPUT-ESTABLISHED"
+          - /ip firewall filter add chain=input action=accept in-interface=ether1 src-address=192.168.1.0/24 protocol=icmp comment="MGMT-INPUT-ICMP"
+          - /ip firewall filter add chain=input action=accept in-interface=ether1 src-address=192.168.1.0/24 dst-port=22,8291 protocol=tcp comment="MGMT-INPUT-SSH-WINBOX"
+          - /ip firewall filter add chain=input action=accept in-interface=ether1 src-address=192.168.1.0/24 dst-port=5678 protocol=udp comment="MGMT-INPUT-MNDP"
+          - /ip firewall filter add chain=input action=accept in-interface=ether5 src-address=10.99.0.0/24 comment="MGMT-INPUT-OOB-LOCAL"
+          - /ip firewall filter add chain=input action=drop comment="MGMT-INPUT-DROP-REST"
+
+          # Forward (Tránsito exclusivo para DNAT y TZSP, bloqueo del resto)
+          - /ip firewall filter add chain=forward action=accept connection-state=established,related comment="MGMT-FWD-ESTABLISHED"
+          - /ip firewall filter add chain=forward action=accept connection-nat-state=dstnat in-interface=ether1 comment="MGMT-FWD-ALLOW-DNAT"
+          - /ip firewall filter add chain=forward action=accept in-interface=ether5 src-address=10.99.0.0/24 dst-address=192.168.1.0/24 comment="ALLOW-TZSP-OOB"
+          - /ip firewall filter add chain=forward action=drop comment="ISOLATION-ZERO-ROUTING-DROP"
+
+    # --------------------------------------------------------------------------
+    # 7. VALIDACIÓN OPERATIVA
+    # --------------------------------------------------------------------------
+    - name: 7. Validar sockets DNAT activos desde el controlador
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ item }}"
+        state: started
+        timeout: 10
+      loop:
+        - 2203
+        - 2204
+        - 2205
+        - 2206
+      delegate_to: localhost

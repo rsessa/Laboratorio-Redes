@@ -1,0 +1,11 @@
+---
+- name: Detener streaming TZSP en el laboratorio
+  hosts: mikrotik_lab:!oob-master:!bastion-oob
+  gather_facts: false
+
+  tasks:
+    - name: Parar sniffer y desactivar streaming
+      community.routeros.command:
+        commands:
+          - /tool/sniffer/stop
+          - /tool/sniffer/set streaming-enabled=no

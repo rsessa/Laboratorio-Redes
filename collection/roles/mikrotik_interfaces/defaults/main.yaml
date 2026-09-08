@@ -1,0 +1,19 @@
+---
+# Valores por defecto para mikrotik_interfaces
+bridges: []
+# Ejemplo:
+#   - name: br-lan
+#     comment: "LAN-USERS"
+#     ports:
+#       - ether3
+#       - ether4
+
+disabled_interfaces: []
+# Ejemplo:
+#   - ether2
+#   - ether3
+
+enabled_interfaces: []
+# Ejemplo:
+#   - ether1
+#   - ether5

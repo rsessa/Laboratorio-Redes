@@ -1,0 +1,12 @@
+---
+# =============================================================================
+# Playbook: collection/playbooks/backup.yaml
+# Objetivo: Extracción de copias de seguridad (.rsc y .backup) en nodos MikroTik
+# =============================================================================
+
+- name: Extracción Modular de Copias de Seguridad
+  hosts: "{{ target_hosts | default('all') }}"
+  gather_facts: false
+
+  roles:
+    - role: ../roles/mikrotik_backup

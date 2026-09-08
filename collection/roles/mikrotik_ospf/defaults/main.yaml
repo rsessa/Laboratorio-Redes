@@ -1,0 +1,14 @@
+---
+# Valores por defecto para mikrotik_ospf
+ospf: {}
+# Ejemplo:
+#   router_id: "10.255.255.1"
+#   instance: "default"
+#   networks:
+#     - network: "10.1.0.0/30"
+#       area: "backbone"
+#   interfaces:
+#     - interface: "ether2"
+#       cost: 10
+#       network_type: "point-to-point"
+#       passive: false

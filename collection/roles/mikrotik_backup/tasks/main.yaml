@@ -1,0 +1,65 @@
+---
+# Tareas principales del rol mikrotik_backup
+
+- name: Resolver directorio local de destino
+  ansible.builtin.set_fact:
+    _target_backup_dir: "{{ custom_backup_dir if (custom_backup_dir | length > 0) else (backup_base_dir ~ '/' ~ backup_timestamp) }}"
+  run_once: true
+
+- name: Asegurar directorio local de almacenamiento
+  ansible.builtin.file:
+    path: "{{ _target_backup_dir }}"
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+  run_once: true
+
+- name: Exportar configuración en texto (.rsc)
+  community.routeros.command:
+    commands:
+      - /export compact
+  register: _rsc_export
+
+- name: Guardar archivo .rsc localmente
+  ansible.builtin.copy:
+    content: "{{ _rsc_export.stdout[0] }}"
+    dest: "{{ _target_backup_dir }}/{{ inventory_hostname }}.rsc"
+    mode: "0644"
+  delegate_to: localhost
+
+- name: Limpiar previamente respaldos temporales en el router
+  community.routeros.command:
+    commands:
+      - ':if ([:len [/file find name~"ansible_bkp"]] > 0) do={ /file remove [find name~"ansible_bkp"] }'
+
+- name: Generar backup binario en el router
+  community.routeros.command:
+    commands:
+      - '/system backup save name=ansible_bkp'
+
+- name: Localizar ruta remota del archivo generado
+  community.routeros.command:
+    commands:
+      - ':put [/file get [find name~"ansible_bkp"] name]'
+  register: _remote_file
+
+- name: Descargar backup binario vía SCP
+  vars:
+    ssh_port: "{{ ansible_port | default(22) }}"
+    target_user: "{{ (ansible_user | default('admin')).split('+')[0] }}"
+  ansible.builtin.command: >
+    scp -P {{ ssh_port }}
+    -o StrictHostKeyChecking=no
+    -o UserKnownHostsFile=/dev/null
+    {% if ssh_private_key is exists %}
+    -i {{ ssh_private_key }}
+    {% endif %}
+    {{ target_user }}@{{ ansible_host }}:"{{ _remote_file.stdout[0] | trim }}"
+    "{{ _target_backup_dir }}/{{ inventory_hostname }}.backup"
+  delegate_to: localhost
+  changed_when: true
+
+- name: Eliminar backup binario temporal en el router
+  community.routeros.command:
+    commands:
+      - ':if ([:len [/file find name~"ansible_bkp"]] > 0) do={ /file remove [find name~"ansible_bkp"] }'

@@ -1,6 +1,6 @@
 ---
 - name: Network topology audit and data extraction
-  hosts: mikrotik_lab
+  hosts: all
   gather_facts: false
   tasks:
     - name: Collect device information

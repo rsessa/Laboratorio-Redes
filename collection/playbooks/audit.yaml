@@ -1,0 +1,56 @@
+---
+# =============================================================================
+# Playbook: collection/playbooks/audit.yaml
+# Objetivo: Auditoría, inventario y telemetría de configuración de red
+# =============================================================================
+
+- name: Auditoría de Estado y Recursos de Nodos MikroTik
+  hosts: "{{ target_hosts | default('all') }}"
+  gather_facts: false
+  vars:
+    audit_target_dir: "{{ audit_dir | default('./network_audit') }}"
+
+  tasks:
+    - name: Asegurar directorio local de auditoría
+      ansible.builtin.file:
+        path: "{{ audit_target_dir }}"
+        state: directory
+        mode: "0755"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Consultar parámetros de salud y recursos
+      community.routeros.command:
+        commands:
+          - /system identity print without-paging
+          - /system resource print
+          - /system routerboard print
+      register: _audit_health
+
+    - name: Consultar L2 y Direccionamiento L3
+      community.routeros.command:
+        commands:
+          - /interface print detail without-paging
+          - /ip address print detail without-paging
+          - /ip route print detail without-paging
+      register: _audit_net
+
+    - name: Guardar informe local
+      ansible.builtin.copy:
+        content: |
+          ==================================================
+          AUDITORIA: {{ inventory_hostname }} ({{ ansible_host }})
+          FECHA: {{ now(fmt='%Y-%m-%d %H:%M:%S') }}
+          ==================================================
+          >>> IDENTIDAD Y RECURSOS:
+          {{ _audit_health.stdout[0] }}
+          {{ _audit_health.stdout[1] }}
+          {{ _audit_health.stdout[2] }}
+
+          >>> INTERFACES Y DIRECCIONAMIENTO:
+          {{ _audit_net.stdout[0] }}
+          {{ _audit_net.stdout[1] }}
+          {{ _audit_net.stdout[2] }}
+        dest: "{{ audit_target_dir }}/{{ inventory_hostname }}_audit.txt"
+        mode: "0644"
+      delegate_to: localhost

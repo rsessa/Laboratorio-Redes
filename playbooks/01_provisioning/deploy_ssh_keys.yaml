@@ -1,12 +1,13 @@
 ---
 - name: Deploy SSH keys on MikroTik lab devices
-  hosts: mikrotik_lab
+  hosts: all
   gather_facts: false
 
   vars:
     ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
     ssh_pub_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa.pub"
     remote_key_filename: "ansible_key.pub"
+    effective_user: "{{ ansible_user.split('+')[0] | default('admin') }}"
 
   tasks:
     - name: Ensure the SSH key pair exists on the local controller
@@ -21,18 +22,18 @@
     - name: Transfer public key to the router via SCP
       ansible.builtin.command: >
         sshpass -p "{{ ansible_password }}"
-        scp -P {{ ansible_port }}
+        scp -P {{ ansible_port | default(22) }}
         -o StrictHostKeyChecking=no
         -o UserKnownHostsFile=/dev/null
         {{ ssh_pub_key_path }}
-        {{ ansible_user }}@{{ ansible_host }}:{{ remote_key_filename }}
+        {{ effective_user }}@{{ ansible_host }}:{{ remote_key_filename }}
       delegate_to: localhost
       changed_when: true
 
     - name: Import SSH key into RouterOS
       community.routeros.command:
         commands:
-          - "/user ssh-keys import public-key-file={{ remote_key_filename }} user={{ ansible_user }}"
+          - "/user ssh-keys import public-key-file={{ remote_key_filename }} user={{ effective_user }}"
       register: import_result
       # RouterOS automatically removes the .pub file from storage after importing it
       failed_when:

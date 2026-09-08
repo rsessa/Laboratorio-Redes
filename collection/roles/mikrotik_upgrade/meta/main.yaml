@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: Richard Sessa
+  description: Actualización secuencial, segura e idempotente de RouterOS y bootloader RouterBOARD.
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: RouterOS
+      versions:
+        - all
+dependencies: []

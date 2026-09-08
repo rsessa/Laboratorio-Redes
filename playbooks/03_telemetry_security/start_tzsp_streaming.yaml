@@ -1,0 +1,26 @@
+---
+- name: Iniciar streaming TZSP hacia Wireshark en RouterOS v7
+  hosts: mikrotik_lab:!oob-master:!bastion-oob
+  gather_facts: false
+  vars:
+    control_pc_ip: "192.168.1.30" # <-- Ajustar a la IP de tu tarjeta de red
+
+  tasks:
+    - name: Detener capturador previo si estaba en ejecucion
+      community.routeros.command:
+        commands:
+          - /tool/sniffer/stop
+
+    - name: Configurar parametros de streaming TZSP (RouterOS v7)
+      community.routeros.command:
+        commands:
+          - >-
+            /tool/sniffer/set streaming-enabled=yes
+            streaming-server={{ control_pc_ip }}
+            filter-interface=all
+            memory-limit=100KiB
+
+    - name: Iniciar captura en segundo plano
+      community.routeros.command:
+        commands:
+          - /tool/sniffer/start

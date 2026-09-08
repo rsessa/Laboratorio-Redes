@@ -1,0 +1,49 @@
+---
+# Tareas principales del rol mikrotik_ospf
+
+- name: Reconciliar Router-ID de la instancia OSPF
+  when: ospf.router_id is defined
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/routing ospf instance find default=yes]] > 0) do={
+          :if ([/routing ospf instance get [find default=yes] router-id] != "{{ ospf.router_id }}") do={
+            /routing ospf instance set [find default=yes] router-id="{{ ospf.router_id }}"
+          }
+        } else={
+          :if ([:len [/routing ospf instance find name="{{ ospf.instance | default('default') }}"]] = 0) do={
+            /routing ospf instance add name="{{ ospf.instance | default('default') }}" router-id="{{ ospf.router_id }}"
+          } else={
+            /routing ospf instance set [find name="{{ ospf.instance | default('default') }}"] router-id="{{ ospf.router_id }}"
+          }
+        }
+
+- name: Reconciliar redes OSPF
+  when: ospf.networks is defined
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/routing ospf network find where network="{{ item.network }}" and area="{{ item.area | default('backbone') }}"]] = 0) do={
+          /routing ospf network add network="{{ item.network }}" area="{{ item.area | default('backbone') }}"
+        }
+  loop: "{{ ospf.networks | default([]) }}"
+
+- name: Reconciliar interfaces OSPF
+  when: ospf.interfaces is defined
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/routing ospf interface find where interface="{{ item.interface }}"]] = 0) do={
+          /routing ospf interface add interface="{{ item.interface }}"
+          cost={{ item.cost | default(10) }}
+          network-type={{ item.network_type | default('point-to-point') }}
+          passive={{ 'yes' if (item.passive | default(false)) else 'no' }}
+          comment="{{ item.comment | default('') }}"
+        } else={
+          /routing ospf interface set [find interface="{{ item.interface }}"]
+          cost={{ item.cost | default(10) }}
+          network-type={{ item.network_type | default('point-to-point') }}
+          passive={{ 'yes' if (item.passive | default(false)) else 'no' }}
+          comment="{{ item.comment | default('') }}"
+        }
+  loop: "{{ ospf.interfaces | default([]) }}"

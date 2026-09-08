@@ -1,0 +1,6 @@
+---
+# Valores por defecto para mikrotik_restore
+backup_source_file: ""
+backup_source_dir: "backups"
+reboot_timeout: 180
+ssh_private_key: "{{ ansible_ssh_private_key_file | default(lookup('env', 'HOME') ~ '/.ssh/id_rsa') }}"

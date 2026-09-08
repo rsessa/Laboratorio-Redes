@@ -1,0 +1,13 @@
+---
+# =============================================================================
+# Playbook: collection/playbooks/upgrade.yaml
+# Objetivo: Actualización secuencial e idempotente de RouterOS y bootloader
+# =============================================================================
+
+- name: Actualización Modular de Nodos MikroTik (Serial 1)
+  hosts: "{{ target_hosts | default('all') }}"
+  serial: 1
+  gather_facts: false
+
+  roles:
+    - role: ../roles/mikrotik_upgrade

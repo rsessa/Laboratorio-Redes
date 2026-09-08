@@ -1,0 +1,74 @@
+---
+# Tareas principales del rol mikrotik_restore
+
+- name: Resolver ruta del archivo de backup
+  ansible.builtin.set_fact:
+    _restore_file: "{{ backup_source_file if (backup_source_file | length > 0) else (backup_source_dir ~ '/' ~ inventory_hostname ~ '.backup') }}"
+
+- name: Comprobar existencia del archivo de respaldo local
+  ansible.builtin.stat:
+    path: "{{ _restore_file }}"
+  register: _backup_stat
+  delegate_to: localhost
+
+- name: Bloque de restauración del nodo
+  when: _backup_stat.stat.exists
+  vars:
+    ssh_port: "{{ ansible_port | default(22) }}"
+    target_user: "{{ (ansible_user | default('admin')).split('+')[0] }}"
+  block:
+    - name: Subir snapshot al router vía SCP
+      ansible.builtin.command: >
+        scp -P {{ ssh_port }}
+        -o StrictHostKeyChecking=no
+        -o UserKnownHostsFile=/dev/null
+        {% if ssh_private_key is exists %}
+        -i {{ ssh_private_key }}
+        {% endif %}
+        "{{ _restore_file }}"
+        {{ target_user }}@{{ ansible_host }}:restore.backup
+      delegate_to: localhost
+      changed_when: true
+
+    - name: Disparar restauración en segundo plano
+      community.routeros.command:
+        commands:
+          - ':execute {/system backup load name="restore.backup" password=""}'
+
+    - name: Esperar interrupción de conexión por reinicio
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ ssh_port }}"
+        state: stopped
+        delay: 3
+        timeout: 30
+      delegate_to: localhost
+      ignore_errors: true
+
+    - name: Esperar recuperación del router
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ ssh_port }}"
+        state: started
+        delay: 15
+        timeout: "{{ reboot_timeout }}"
+      delegate_to: localhost
+
+    - name: Validar uptime tras reinicio
+      community.routeros.command:
+        commands:
+          - ':put [/system resource get uptime]'
+      register: _new_uptime
+      retries: 5
+      delay: 5
+      until: _new_uptime is not failed
+
+    - name: Limpiar archivo de respaldo temporal en el router
+      community.routeros.command:
+        commands:
+          - ':if ([:len [/file find name~"restore.backup"]] > 0) do={ /file remove [find name~"restore.backup"] }'
+
+- name: Notificar si se omitió por falta de archivo
+  ansible.builtin.debug:
+    msg: "Omitido: No se encontró el archivo de backup en '{{ _restore_file }}' para {{ inventory_hostname }}."
+  when: not _backup_stat.stat.exists

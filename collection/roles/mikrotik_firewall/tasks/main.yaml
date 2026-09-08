@@ -1,0 +1,88 @@
+---
+# Tareas principales del rol mikrotik_firewall
+
+# -----------------------------------------------------------------------------
+# 1. REGLAS NAT (DNAT)
+# -----------------------------------------------------------------------------
+- name: Reconciliar reglas de Destination NAT (DNAT)
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/ip firewall nat find where comment="{{ item.name }}"]] = 0) do={
+          /ip firewall nat add chain=dstnat
+          in-interface="{{ item.in_interface | default('ether1') }}"
+          dst-port={{ item.dst_port }}
+          protocol={{ item.protocol | default('tcp') }}
+          action=dst-nat
+          to-addresses={{ item.to_address }}
+          to-ports={{ item.to_port | default(22) }}
+          comment="{{ item.name }}"
+        } else={
+          /ip firewall nat set [find comment="{{ item.name }}"]
+          in-interface="{{ item.in_interface | default('ether1') }}"
+          dst-port={{ item.dst_port }}
+          protocol={{ item.protocol | default('tcp') }}
+          action=dst-nat
+          to-addresses={{ item.to_address }}
+          to-ports={{ item.to_port | default(22) }}
+        }
+  loop: "{{ dnat_rules }}"
+  when: dnat_rules is defined and dnat_rules | length > 0
+
+# -----------------------------------------------------------------------------
+# 2. REGLAS NAT (SNAT / MASQUERADE)
+# -----------------------------------------------------------------------------
+- name: Reconciliar reglas de Source NAT (Masquerade / SNAT)
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/ip firewall nat find where comment="{{ item.name }}"]] = 0) do={
+          /ip firewall nat add chain={{ item.chain | default('srcnat') }}
+          {% if item.src_address is defined %}src-address="{{ item.src_address }}"{% endif %}
+          {% if item.dst_address is defined %}dst-address="{{ item.dst_address }}"{% endif %}
+          {% if item.out_interface is defined %}out-interface="{{ item.out_interface }}"{% endif %}
+          action={{ item.action | default('masquerade') }}
+          comment="{{ item.name }}"
+        }
+  loop: "{{ snat_rules }}"
+  when: snat_rules is defined and snat_rules | length > 0
+
+# -----------------------------------------------------------------------------
+# 3. FIREWALL FILTER (INPUT)
+# -----------------------------------------------------------------------------
+- name: Reconciliar reglas de Firewall Filter (Cadena Input)
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/ip firewall filter find where comment="{{ item.name }}"]] = 0) do={
+          /ip firewall filter add chain=input
+          action={{ item.action | default('accept') }}
+          {% if item.connection_state is defined %}connection-state={{ item.connection_state }}{% endif %}
+          {% if item.in_interface is defined %}in-interface="{{ item.in_interface }}"{% endif %}
+          {% if item.src_address is defined %}src-address="{{ item.src_address }}"{% endif %}
+          {% if item.protocol is defined %}protocol={{ item.protocol }}{% endif %}
+          {% if item.dst_port is defined %}dst-port={{ item.dst_port }}{% endif %}
+          comment="{{ item.name }}"
+        }
+  loop: "{{ firewall_input_rules }}"
+  when: firewall_input_rules is defined and firewall_input_rules | length > 0
+
+# -----------------------------------------------------------------------------
+# 4. FIREWALL FILTER (FORWARD)
+# -----------------------------------------------------------------------------
+- name: Reconciliar reglas de Firewall Filter (Cadena Forward)
+  community.routeros.command:
+    commands:
+      - >-
+        :if ([:len [/ip firewall filter find where comment="{{ item.name }}"]] = 0) do={
+          /ip firewall filter add chain=forward
+          action={{ item.action | default('accept') }}
+          {% if item.connection_state is defined %}connection-state={{ item.connection_state }}{% endif %}
+          {% if item.connection_nat_state is defined %}connection-nat-state={{ item.connection_nat_state }}{% endif %}
+          {% if item.in_interface is defined %}in-interface="{{ item.in_interface }}"{% endif %}
+          {% if item.src_address is defined %}src-address="{{ item.src_address }}"{% endif %}
+          {% if item.dst_address is defined %}dst-address="{{ item.dst_address }}"{% endif %}
+          comment="{{ item.name }}"
+        }
+  loop: "{{ firewall_forward_rules }}"
+  when: firewall_forward_rules is defined and firewall_forward_rules | length > 0
