@@ -1,0 +1,1127 @@
+ansible-playbook [core 2.21.3]
+  config file = None
+  configured module search path = ['/home/richard/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /home/richard/ansible-venv/lib/python3.12/site-packages/ansible
+  ansible collection location = /home/richard/.ansible/collections:/usr/share/ansible/collections
+  executable location = /home/richard/ansible-venv/bin/ansible-playbook
+  python version = 3.12.3 (main, Jul 15 2026, 23:46:41) [GCC 13.3.0] (/home/richard/ansible-venv/bin/python3)
+  jinja version = 3.1.6
+  pyyaml version = 6.0.3 (with libyaml v0.2.5)
+No config file found; using defaults
+host_list declined parsing /mnt/d/Dev/Ansible/LAB001/hosts.yaml as it did not pass its verify_file() method
+Parsed /mnt/d/Dev/Ansible/LAB001/hosts.yaml inventory source with yaml plugin
+Skipping callback 'minimal', as we already have a stdout callback.
+Skipping callback 'oneline', as we already have a stdout callback.
+
+PLAYBOOK: backup_nodes.yaml ****************************************************
+1 plays in backup_nodes.yaml
+
+PLAY [Extracción de copias de seguridad de la infraestructura MikroTik] ********
+
+TASK [Generar ruta de backup única] ********************************************
+task path: /mnt/d/Dev/Ansible/LAB001/backup_nodes.yaml:9
+ok: [oob-master -> localhost] => {
+    "ansible_facts": {
+        "local_backup_dir": "backups/20260907_195720"
+    },
+    "changed": false
+}
+
+TASK [Crear directorio local en WSL] *******************************************
+task path: /mnt/d/Dev/Ansible/LAB001/backup_nodes.yaml:14
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803840.8621783-119365-218700351998157 `" && echo ansible-tmp-1788803840.8621783-119365-218700351998157="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803840.8621783-119365-218700351998157 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/file.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp81inah6_ TO /home/richard/.ansible/tmp/ansible-tmp-1788803840.8621783-119365-218700351998157/AnsiballZ_file.py
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803840.8621783-119365-218700351998157/ /home/richard/.ansible/tmp/ansible-tmp-1788803840.8621783-119365-218700351998157/AnsiballZ_file.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803840.8621783-119365-218700351998157/AnsiballZ_file.py'
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803840.8621783-119365-218700351998157/ > /dev/null 2>&1'
+changed: [oob-master -> localhost] => {
+    "changed": true,
+    "gid": 1000,
+    "group": "richard",
+    "mode": "0777",
+    "owner": "richard",
+    "path": "backups/20260907_195720",
+    "size": 512,
+    "state": "directory",
+    "uid": 1000
+}
+
+TASK [2. Exportar configuración en texto (.rsc) vía consola] *******************
+task path: /mnt/d/Dev/Ansible/LAB001/backup_nodes.yaml:22
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.6845686-119387-239246848877703 `" && echo ansible-tmp-1788803841.6845686-119387-239246848877703="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.6845686-119387-239246848877703 `" )'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7009358-119386-184122946170928 `" && echo ansible-tmp-1788803841.7009358-119386-184122946170928="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7009358-119386-184122946170928 `" )'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.701105-119389-81641160216171 `" && echo ansible-tmp-1788803841.701105-119389-81641160216171="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.701105-119389-81641160216171 `" )'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7042954-119385-17098084853647 `" && echo ansible-tmp-1788803841.7042954-119385-17098084853647="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7042954-119385-17098084853647 `" )'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7101078-119388-226186769447999 `" && echo ansible-tmp-1788803841.7101078-119388-226186769447999="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7101078-119388-226186769447999 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpvf8ukut7 TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.6845686-119387-239246848877703/AnsiballZ_command.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.6845686-119387-239246848877703/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.6845686-119387-239246848877703/AnsiballZ_command.py'
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp3mdusg_k TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7009358-119386-184122946170928/AnsiballZ_command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmplhrqvwx5 TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7101078-119388-226186769447999/AnsiballZ_command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp2nemavsz TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7042954-119385-17098084853647/AnsiballZ_command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp8n02klkh TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.701105-119389-81641160216171/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7009358-119386-184122946170928/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7009358-119386-184122946170928/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7101078-119388-226186769447999/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7101078-119388-226186769447999/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.701105-119389-81641160216171/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.701105-119389-81641160216171/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7042954-119385-17098084853647/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7042954-119385-17098084853647/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.6845686-119387-239246848877703/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7009358-119386-184122946170928/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.701105-119389-81641160216171/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7101078-119388-226186769447999/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7042954-119385-17098084853647/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.6845686-119387-239246848877703/ > /dev/null 2>&1'
+changed: [branch-edge-01] => {
+    "changed": true,
+    "stdout": [
+        "# jan/02/1970 03:19:03 by RouterOS 6.49.21\n# software id = GYTV-QCCY\n#\n# model = RBD52G-5HacD2HnD\n# serial number = A6470AB1CB7B\n/interface bridge\nadd admin-mac=74:4D:28:68:EE:77 auto-mac=no comment=defconf name=bridge\n/interface wireless\nset [ find default-name=wlan1 ] band=2ghz-b/g/n channel-width=20/40mhz-XX \\\n    disabled=no distance=indoors frequency=auto installation=indoor mode=\\\n    ap-bridge ssid=MikroTik-68EE7B wireless-protocol=802.11\nset [ find default-name=wlan2 ] band=5ghz-a/n/ac channel-width=\\\n    20/40/80mhz-XXXX disabled=no distance=indoors frequency=auto \\\n    installation=indoor mode=ap-bridge ssid=MikroTik-68EE7C \\\n    wireless-protocol=802.11\n/interface gre\nadd allow-fast-path=no comment=VPN-HQ ipsec-secret=LabKey2026 local-address=\\\n    198.51.100.2 name=gre-vpn remote-address=198.51.100.1\n/interface list\nadd comment=defconf name=WAN\nadd comment=defconf name=LAN\n/interface wireless security-profiles\nset [ find default=yes ] supplicant-identity=MikroTik\n/ip pool\nadd name=default-dhcp ranges=192.168.88.10-192.168.88.254\n/ip dhcp-server\nadd address-pool=default-dhcp disabled=no interface=bridge name=defconf\n/routing ospf instance\nset [ find default=yes ] router-id=10.255.255.3\n/interface bridge port\nadd bridge=bridge comment=defconf interface=ether5\n/ip neighbor discovery-settings\nset discover-interface-list=LAN\n/interface list member\nadd comment=defconf interface=bridge list=LAN\nadd comment=defconf interface=ether1 list=WAN\n/ip address\nadd address=10.99.0.4/24 comment=OOB-MGMT interface=ether5 network=10.99.0.0\nadd address=198.51.100.2/30 comment=WAN-BRANCH interface=ether1 network=\\\n    198.51.100.0\nadd address=10.100.0.2/30 comment=P2P-VPN interface=gre-vpn network=\\\n    10.100.0.0\nadd address=10.2.0.1/30 comment=TRANSIT-BRANCH-CORE interface=ether2 network=\\\n    10.2.0.0\n/ip dhcp-server network\nadd address=192.168.88.0/24 comment=defconf gateway=192.168.88.1\n/ip dns\nset allow-remote-requests=yes\n/ip dns static\nadd address=192.168.88.1 comment=defconf name=router.lan\n/ip firewall nat\nadd action=masquerade chain=srcnat comment=\"defconf: masquerade\" \\\n    ipsec-policy=out,none out-interface-list=WAN\n/ip route\nadd distance=1 gateway=10.99.0.1\n/ip ssh\nset strong-crypto=yes\n/routing ospf interface\nadd interface=gre-vpn network-type=point-to-point\nadd interface=ether2 network-type=point-to-point\n/routing ospf network\nadd area=backbone network=10.100.0.0/30\nadd area=backbone network=10.2.0.0/30\n/system identity\nset name=branch-edge-01\n/system routerboard settings\nset auto-upgrade=yes\n/tool mac-server\nset allowed-interface-list=LAN\n/tool mac-server mac-winbox\nset allowed-interface-list=LAN\n/tool romon\nset enabled=yes"
+    ],
+    "stdout_lines": [
+        [
+            "# jan/02/1970 03:19:03 by RouterOS 6.49.21",
+            "# software id = GYTV-QCCY",
+            "#",
+            "# model = RBD52G-5HacD2HnD",
+            "# serial number = A6470AB1CB7B",
+            "/interface bridge",
+            "add admin-mac=74:4D:28:68:EE:77 auto-mac=no comment=defconf name=bridge",
+            "/interface wireless",
+            "set [ find default-name=wlan1 ] band=2ghz-b/g/n channel-width=20/40mhz-XX \\",
+            "    disabled=no distance=indoors frequency=auto installation=indoor mode=\\",
+            "    ap-bridge ssid=MikroTik-68EE7B wireless-protocol=802.11",
+            "set [ find default-name=wlan2 ] band=5ghz-a/n/ac channel-width=\\",
+            "    20/40/80mhz-XXXX disabled=no distance=indoors frequency=auto \\",
+            "    installation=indoor mode=ap-bridge ssid=MikroTik-68EE7C \\",
+            "    wireless-protocol=802.11",
+            "/interface gre",
+            "add allow-fast-path=no comment=VPN-HQ ipsec-secret=LabKey2026 local-address=\\",
+            "    198.51.100.2 name=gre-vpn remote-address=198.51.100.1",
+            "/interface list",
+            "add comment=defconf name=WAN",
+            "add comment=defconf name=LAN",
+            "/interface wireless security-profiles",
+            "set [ find default=yes ] supplicant-identity=MikroTik",
+            "/ip pool",
+            "add name=default-dhcp ranges=192.168.88.10-192.168.88.254",
+            "/ip dhcp-server",
+            "add address-pool=default-dhcp disabled=no interface=bridge name=defconf",
+            "/routing ospf instance",
+            "set [ find default=yes ] router-id=10.255.255.3",
+            "/interface bridge port",
+            "add bridge=bridge comment=defconf interface=ether5",
+            "/ip neighbor discovery-settings",
+            "set discover-interface-list=LAN",
+            "/interface list member",
+            "add comment=defconf interface=bridge list=LAN",
+            "add comment=defconf interface=ether1 list=WAN",
+            "/ip address",
+            "add address=10.99.0.4/24 comment=OOB-MGMT interface=ether5 network=10.99.0.0",
+            "add address=198.51.100.2/30 comment=WAN-BRANCH interface=ether1 network=\\",
+            "    198.51.100.0",
+            "add address=10.100.0.2/30 comment=P2P-VPN interface=gre-vpn network=\\",
+            "    10.100.0.0",
+            "add address=10.2.0.1/30 comment=TRANSIT-BRANCH-CORE interface=ether2 network=\\",
+            "    10.2.0.0",
+            "/ip dhcp-server network",
+            "add address=192.168.88.0/24 comment=defconf gateway=192.168.88.1",
+            "/ip dns",
+            "set allow-remote-requests=yes",
+            "/ip dns static",
+            "add address=192.168.88.1 comment=defconf name=router.lan",
+            "/ip firewall nat",
+            "add action=masquerade chain=srcnat comment=\"defconf: masquerade\" \\",
+            "    ipsec-policy=out,none out-interface-list=WAN",
+            "/ip route",
+            "add distance=1 gateway=10.99.0.1",
+            "/ip ssh",
+            "set strong-crypto=yes",
+            "/routing ospf interface",
+            "add interface=gre-vpn network-type=point-to-point",
+            "add interface=ether2 network-type=point-to-point",
+            "/routing ospf network",
+            "add area=backbone network=10.100.0.0/30",
+            "add area=backbone network=10.2.0.0/30",
+            "/system identity",
+            "set name=branch-edge-01",
+            "/system routerboard settings",
+            "set auto-upgrade=yes",
+            "/tool mac-server",
+            "set allowed-interface-list=LAN",
+            "/tool mac-server mac-winbox",
+            "set allowed-interface-list=LAN",
+            "/tool romon",
+            "set enabled=yes"
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.701105-119389-81641160216171/ > /dev/null 2>&1'
+changed: [hq-dist-01] => {
+    "changed": true,
+    "stdout": [
+        "# jan/02/1970 03:29:18 by RouterOS 6.49.21\n# software id = WXV5-HC7M\n#\n# model = RouterBOARD 750G r3\n# serial number = 6F38077A909C\n/interface bridge\nadd admin-mac=64:D1:54:49:17:90 auto-mac=no comment=defconf name=bridgeLocal\n/interface gre\nadd allow-fast-path=no comment=VPN-BRANCH ipsec-secret=LabKey2026 \\\n    local-address=198.51.100.1 name=gre-vpn remote-address=198.51.100.2\n/interface wireless security-profiles\nset [ find default=yes ] supplicant-identity=MikroTik\n/routing ospf instance\nset [ find default=yes ] router-id=10.255.255.1\n/interface bridge port\nadd bridge=bridgeLocal comment=defconf interface=ether5\n/ip address\nadd address=10.99.0.6/24 comment=OOB-MGMT interface=ether5 network=10.99.0.0\nadd address=198.51.100.1/30 comment=WAN-HQ interface=ether1 network=\\\n    198.51.100.0\nadd address=10.100.0.1/30 comment=P2P-VPN interface=gre-vpn network=\\\n    10.100.0.0\nadd address=10.1.0.1/30 comment=TRANSIT-HQ-CORE interface=ether2 network=\\\n    10.1.0.0\n/ip route\nadd comment=MGMT-TO-WIRESHARK distance=1 dst-address=192.168.1.0/24 gateway=\\\n    10.99.0.1\n/ip ssh\nset strong-crypto=yes\n/routing ospf interface\nadd interface=gre-vpn network-type=point-to-point\nadd interface=ether2 network-type=point-to-point\n/routing ospf network\nadd area=backbone network=10.100.0.0/30\nadd area=backbone network=10.1.0.0/30\n/system identity\nset name=hq-edge-01\n/system routerboard settings\nset auto-upgrade=yes\n/tool romon\nset enabled=yes\n/tool sniffer\nset filter-interface=ether1 streaming-server=192.168.1.30"
+    ],
+    "stdout_lines": [
+        [
+            "# jan/02/1970 03:29:18 by RouterOS 6.49.21",
+            "# software id = WXV5-HC7M",
+            "#",
+            "# model = RouterBOARD 750G r3",
+            "# serial number = 6F38077A909C",
+            "/interface bridge",
+            "add admin-mac=64:D1:54:49:17:90 auto-mac=no comment=defconf name=bridgeLocal",
+            "/interface gre",
+            "add allow-fast-path=no comment=VPN-BRANCH ipsec-secret=LabKey2026 \\",
+            "    local-address=198.51.100.1 name=gre-vpn remote-address=198.51.100.2",
+            "/interface wireless security-profiles",
+            "set [ find default=yes ] supplicant-identity=MikroTik",
+            "/routing ospf instance",
+            "set [ find default=yes ] router-id=10.255.255.1",
+            "/interface bridge port",
+            "add bridge=bridgeLocal comment=defconf interface=ether5",
+            "/ip address",
+            "add address=10.99.0.6/24 comment=OOB-MGMT interface=ether5 network=10.99.0.0",
+            "add address=198.51.100.1/30 comment=WAN-HQ interface=ether1 network=\\",
+            "    198.51.100.0",
+            "add address=10.100.0.1/30 comment=P2P-VPN interface=gre-vpn network=\\",
+            "    10.100.0.0",
+            "add address=10.1.0.1/30 comment=TRANSIT-HQ-CORE interface=ether2 network=\\",
+            "    10.1.0.0",
+            "/ip route",
+            "add comment=MGMT-TO-WIRESHARK distance=1 dst-address=192.168.1.0/24 gateway=\\",
+            "    10.99.0.1",
+            "/ip ssh",
+            "set strong-crypto=yes",
+            "/routing ospf interface",
+            "add interface=gre-vpn network-type=point-to-point",
+            "add interface=ether2 network-type=point-to-point",
+            "/routing ospf network",
+            "add area=backbone network=10.100.0.0/30",
+            "add area=backbone network=10.1.0.0/30",
+            "/system identity",
+            "set name=hq-edge-01",
+            "/system routerboard settings",
+            "set auto-upgrade=yes",
+            "/tool romon",
+            "set enabled=yes",
+            "/tool sniffer",
+            "set filter-interface=ether1 streaming-server=192.168.1.30"
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7009358-119386-184122946170928/ > /dev/null 2>&1'
+changed: [hq-core-01] => {
+    "changed": true,
+    "stdout": [
+        "# jan/02/1970 03:13:04 by RouterOS 6.49.21\n# software id = HZM9-V0IW\n#\n# model = RBD52G-5HacD2HnD\n# serial number = HGD09RQ9C69\n/interface bridge\nadd comment=LAN-HQ-USERS name=br-lan\n/interface wireless\nset [ find default-name=wlan1 ] ssid=MikroTik\nset [ find default-name=wlan2 ] ssid=MikroTik\n/interface wireless security-profiles\nset [ find default=yes ] supplicant-identity=MikroTik\n/routing ospf instance\nset [ find default=yes ] router-id=10.255.255.2\n/ip address\nadd address=10.99.0.3/24 comment=OOB-MGMT interface=ether5 network=10.99.0.0\nadd address=10.10.0.1/24 comment=GATEWAY-HQ-LAN interface=br-lan network=\\\n    10.10.0.0\nadd address=10.1.0.2/30 comment=TRANSIT-HQ-EDGE interface=ether1 network=\\\n    10.1.0.0\nadd address=10.255.0.1/30 comment=BACKUP-LEASED-LINE interface=ether2 \\\n    network=10.255.0.0\n/ip route\nadd distance=1 gateway=10.99.0.1\n/ip ssh\nset strong-crypto=yes\n/routing ospf interface\nadd interface=ether1 network-type=point-to-point\nadd comment=STANDBY-PATH cost=50 interface=ether2 network-type=point-to-point\nadd interface=br-lan passive=yes\n/routing ospf network\nadd area=backbone comment=TRANSIT-EDGE network=10.1.0.0/30\nadd area=backbone comment=LEASED-LINE-BACKUP network=10.255.0.0/30\nadd area=backbone comment=LAN-HQ network=10.10.0.0/24\n/system identity\nset name=hq-core-01\n/system routerboard settings\nset auto-upgrade=yes\n/tool romon\nset enabled=yes"
+    ],
+    "stdout_lines": [
+        [
+            "# jan/02/1970 03:13:04 by RouterOS 6.49.21",
+            "# software id = HZM9-V0IW",
+            "#",
+            "# model = RBD52G-5HacD2HnD",
+            "# serial number = HGD09RQ9C69",
+            "/interface bridge",
+            "add comment=LAN-HQ-USERS name=br-lan",
+            "/interface wireless",
+            "set [ find default-name=wlan1 ] ssid=MikroTik",
+            "set [ find default-name=wlan2 ] ssid=MikroTik",
+            "/interface wireless security-profiles",
+            "set [ find default=yes ] supplicant-identity=MikroTik",
+            "/routing ospf instance",
+            "set [ find default=yes ] router-id=10.255.255.2",
+            "/ip address",
+            "add address=10.99.0.3/24 comment=OOB-MGMT interface=ether5 network=10.99.0.0",
+            "add address=10.10.0.1/24 comment=GATEWAY-HQ-LAN interface=br-lan network=\\",
+            "    10.10.0.0",
+            "add address=10.1.0.2/30 comment=TRANSIT-HQ-EDGE interface=ether1 network=\\",
+            "    10.1.0.0",
+            "add address=10.255.0.1/30 comment=BACKUP-LEASED-LINE interface=ether2 \\",
+            "    network=10.255.0.0",
+            "/ip route",
+            "add distance=1 gateway=10.99.0.1",
+            "/ip ssh",
+            "set strong-crypto=yes",
+            "/routing ospf interface",
+            "add interface=ether1 network-type=point-to-point",
+            "add comment=STANDBY-PATH cost=50 interface=ether2 network-type=point-to-point",
+            "add interface=br-lan passive=yes",
+            "/routing ospf network",
+            "add area=backbone comment=TRANSIT-EDGE network=10.1.0.0/30",
+            "add area=backbone comment=LEASED-LINE-BACKUP network=10.255.0.0/30",
+            "add area=backbone comment=LAN-HQ network=10.10.0.0/24",
+            "/system identity",
+            "set name=hq-core-01",
+            "/system routerboard settings",
+            "set auto-upgrade=yes",
+            "/tool romon",
+            "set enabled=yes"
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7101078-119388-226186769447999/ > /dev/null 2>&1'
+changed: [branch-core-01] => {
+    "changed": true,
+    "stdout": [
+        "# jan/02/1970 01:27:24 by RouterOS 6.49.21\n# software id = GT10-VH5Z\n#\n# model = RouterBOARD 750G r3\n# serial number = 6F3908C556B8\n/interface bridge\nadd comment=LAN-BRANCH-USERS name=br-lan\nadd admin-mac=CC:2D:E0:09:8D:A0 auto-mac=no comment=defconf name=bridge\n/interface list\nadd comment=defconf name=WAN\nadd comment=defconf name=LAN\n/interface wireless security-profiles\nset [ find default=yes ] supplicant-identity=MikroTik\n/ip pool\nadd name=default-dhcp ranges=192.168.88.10-192.168.88.254\n/ip dhcp-server\nadd address-pool=default-dhcp disabled=no interface=bridge name=defconf\n/routing ospf instance\nset [ find default=yes ] router-id=10.255.255.4\n/interface bridge port\nadd bridge=bridge comment=defconf interface=ether5\n/ip neighbor discovery-settings\nset discover-interface-list=LAN\n/interface list member\nadd comment=defconf interface=bridge list=LAN\nadd comment=defconf interface=ether1 list=WAN\n/ip address\nadd address=192.168.88.1/24 comment=defconf interface=bridge network=\\\n    192.168.88.0\nadd address=10.99.0.5/24 comment=OOB-MGMT interface=ether5 network=10.99.0.0\nadd address=10.30.0.1/24 comment=GATEWAY-BRANCH-LAN interface=br-lan network=\\\n    10.30.0.0\nadd address=10.2.0.2/30 comment=TRANSIT-BRANCH-EDGE interface=ether1 network=\\\n    10.2.0.0\nadd address=10.255.0.2/30 comment=BACKUP-LEASED-LINE interface=ether2 \\\n    network=10.255.0.0\n/ip dhcp-server network\nadd address=192.168.88.0/24 comment=defconf dns-server=192.168.88.1 gateway=\\\n    192.168.88.1\n/ip dns\nset allow-remote-requests=yes\n/ip dns static\nadd address=192.168.88.1 comment=defconf name=router.lan\n/ip firewall nat\nadd action=masquerade chain=srcnat comment=\"defconf: masquerade\" \\\n    ipsec-policy=out,none out-interface-list=WAN\n/ip route\nadd distance=1 dst-address=0.0.0.0/24 gateway=10.99.0.1\n/ip ssh\nset strong-crypto=yes\n/routing ospf interface\nadd interface=ether1 network-type=point-to-point\nadd comment=STANDBY-PATH cost=50 interface=ether2 network-type=point-to-point\nadd interface=br-lan passive=yes\n/routing ospf network\nadd area=backbone comment=TRANSIT-EDGE network=10.2.0.0/30\nadd area=backbone comment=LEASED-LINE-BACKUP network=10.255.0.0/30\nadd area=backbone comment=LAN-BRANCH network=10.30.0.0/24\n/system identity\nset name=branch-core-01\n/system routerboard settings\nset auto-upgrade=yes\n/tool mac-server\nset allowed-interface-list=LAN\n/tool mac-server mac-winbox\nset allowed-interface-list=LAN\n/tool romon\nset enabled=yes"
+    ],
+    "stdout_lines": [
+        [
+            "# jan/02/1970 01:27:24 by RouterOS 6.49.21",
+            "# software id = GT10-VH5Z",
+            "#",
+            "# model = RouterBOARD 750G r3",
+            "# serial number = 6F3908C556B8",
+            "/interface bridge",
+            "add comment=LAN-BRANCH-USERS name=br-lan",
+            "add admin-mac=CC:2D:E0:09:8D:A0 auto-mac=no comment=defconf name=bridge",
+            "/interface list",
+            "add comment=defconf name=WAN",
+            "add comment=defconf name=LAN",
+            "/interface wireless security-profiles",
+            "set [ find default=yes ] supplicant-identity=MikroTik",
+            "/ip pool",
+            "add name=default-dhcp ranges=192.168.88.10-192.168.88.254",
+            "/ip dhcp-server",
+            "add address-pool=default-dhcp disabled=no interface=bridge name=defconf",
+            "/routing ospf instance",
+            "set [ find default=yes ] router-id=10.255.255.4",
+            "/interface bridge port",
+            "add bridge=bridge comment=defconf interface=ether5",
+            "/ip neighbor discovery-settings",
+            "set discover-interface-list=LAN",
+            "/interface list member",
+            "add comment=defconf interface=bridge list=LAN",
+            "add comment=defconf interface=ether1 list=WAN",
+            "/ip address",
+            "add address=192.168.88.1/24 comment=defconf interface=bridge network=\\",
+            "    192.168.88.0",
+            "add address=10.99.0.5/24 comment=OOB-MGMT interface=ether5 network=10.99.0.0",
+            "add address=10.30.0.1/24 comment=GATEWAY-BRANCH-LAN interface=br-lan network=\\",
+            "    10.30.0.0",
+            "add address=10.2.0.2/30 comment=TRANSIT-BRANCH-EDGE interface=ether1 network=\\",
+            "    10.2.0.0",
+            "add address=10.255.0.2/30 comment=BACKUP-LEASED-LINE interface=ether2 \\",
+            "    network=10.255.0.0",
+            "/ip dhcp-server network",
+            "add address=192.168.88.0/24 comment=defconf dns-server=192.168.88.1 gateway=\\",
+            "    192.168.88.1",
+            "/ip dns",
+            "set allow-remote-requests=yes",
+            "/ip dns static",
+            "add address=192.168.88.1 comment=defconf name=router.lan",
+            "/ip firewall nat",
+            "add action=masquerade chain=srcnat comment=\"defconf: masquerade\" \\",
+            "    ipsec-policy=out,none out-interface-list=WAN",
+            "/ip route",
+            "add distance=1 dst-address=0.0.0.0/24 gateway=10.99.0.1",
+            "/ip ssh",
+            "set strong-crypto=yes",
+            "/routing ospf interface",
+            "add interface=ether1 network-type=point-to-point",
+            "add comment=STANDBY-PATH cost=50 interface=ether2 network-type=point-to-point",
+            "add interface=br-lan passive=yes",
+            "/routing ospf network",
+            "add area=backbone comment=TRANSIT-EDGE network=10.2.0.0/30",
+            "add area=backbone comment=LEASED-LINE-BACKUP network=10.255.0.0/30",
+            "add area=backbone comment=LAN-BRANCH network=10.30.0.0/24",
+            "/system identity",
+            "set name=branch-core-01",
+            "/system routerboard settings",
+            "set auto-upgrade=yes",
+            "/tool mac-server",
+            "set allowed-interface-list=LAN",
+            "/tool mac-server mac-winbox",
+            "set allowed-interface-list=LAN",
+            "/tool romon",
+            "set enabled=yes"
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803841.7042954-119385-17098084853647/ > /dev/null 2>&1'
+changed: [oob-master] => {
+    "changed": true,
+    "stdout": [
+        "# sep/07/2026 19:57:23 by RouterOS 6.49.21\n# software id = RWTE-05J8\n#\n# model = RouterBOARD 750UP r2\n# serial number = 65B105705259\n/interface ethernet\nset [ find default-name=ether2 ] comment=UNUSED-ISOLATED disabled=yes\nset [ find default-name=ether3 ] comment=UNUSED-ISOLATED disabled=yes\nset [ find default-name=ether4 ] comment=UNUSED-ISOLATED disabled=yes\nset [ find default-name=ether5 ] comment=OOB-SWITCH-UPLINK\n/interface list\nadd comment=defconf name=WAN\nadd comment=defconf name=LAN\n/interface wireless security-profiles\nset [ find default=yes ] supplicant-identity=MikroTik\n/ip neighbor discovery-settings\nset discover-interface-list=all\n/interface list member\nadd comment=defconf list=LAN\nadd comment=defconf interface=ether1 list=WAN\n/ip address\nadd address=192.168.1.210/24 comment=WAN-LAN interface=ether1 network=\\\n    192.168.1.0\nadd address=10.99.0.1/24 comment=GATEWAY-OOB network=10.99.0.0\nadd address=10.99.0.1/24 comment=GATEWAY-OOB interface=ether5 network=\\\n    10.99.0.0\n/ip dns\nset allow-remote-requests=yes servers=192.168.1.1,1.1.1.1\n/ip dns static\nadd address=192.168.88.1 comment=defconf name=router.lan\n/ip firewall filter\nadd action=accept chain=input comment=\\\n    \"defconf: accept established,related,untracked\" connection-state=\\\n    established,related,untracked\nadd action=drop chain=input comment=\"defconf: drop invalid\" connection-state=\\\n    invalid disabled=yes\nadd action=accept chain=input comment=\"defconf: accept ICMP\" protocol=icmp\nadd action=accept chain=input comment=\\\n    \"defconf: accept to local loopback (for CAPsMAN)\" dst-address=127.0.0.1\nadd action=drop chain=input comment=\"defconf: drop all not coming from LAN\" \\\n    disabled=yes in-interface-list=!LAN\nadd action=accept chain=forward comment=\"defconf: accept in ipsec policy\" \\\n    ipsec-policy=in,ipsec\nadd action=accept chain=forward comment=\"defconf: accept out ipsec policy\" \\\n    ipsec-policy=out,ipsec\nadd action=fasttrack-connection chain=forward comment=\"defconf: fasttrack\" \\\n    connection-state=established,related\nadd action=accept chain=forward comment=\\\n    \"defconf: accept established,related, untracked\" connection-state=\\\n    established,related,untracked\nadd action=drop chain=forward comment=\"defconf: drop invalid\" \\\n    connection-state=invalid\nadd action=drop chain=forward comment=\\\n    \"defconf: drop all from WAN not DSTNATed\" connection-nat-state=!dstnat \\\n    connection-state=new in-interface-list=WAN\nadd action=accept chain=input comment=MGMT-INPUT-ESTABLISHED \\\n    connection-state=established,related\nadd action=accept chain=input comment=MGMT-INPUT-ICMP in-interface=ether1 \\\n    protocol=icmp src-address=192.168.1.0/24\nadd action=accept chain=input comment=MGMT-INPUT-SSH-WINBOX dst-port=22,8291 \\\n    in-interface=ether1 protocol=tcp src-address=192.168.1.0/24\nadd action=accept chain=input comment=MGMT-INPUT-MNDP dst-port=5678 \\\n    in-interface=ether1 protocol=udp src-address=192.168.1.0/24\n# no interface\nadd action=accept chain=input comment=MGMT-INPUT-LAB-LOCAL in-interface=*7\nadd action=drop chain=input comment=MGMT-INPUT-DROP-REST\nadd action=accept chain=forward comment=MGMT-FWD-ESTABLISHED \\\n    connection-state=established,related\nadd action=accept chain=forward comment=MGMT-FWD-ALLOW-DNAT \\\n    connection-nat-state=dstnat in-interface=ether1\nadd action=accept chain=forward comment=ALLOW-TZSP-OOB dst-address=\\\n    192.168.1.0/24 src-address=10.99.0.0/24\nadd action=drop chain=forward comment=ISOLATION-ZERO-ROUTING-DROP\nadd action=accept chain=input comment=MGMT-INPUT-ESTABLISHED \\\n    connection-state=established,related\nadd action=accept chain=input comment=MGMT-INPUT-ICMP in-interface=ether1 \\\n    protocol=icmp src-address=192.168.1.0/24\nadd action=accept chain=input comment=MGMT-INPUT-SSH-WINBOX dst-port=22,8291 \\\n    in-interface=ether1 protocol=tcp src-address=192.168.1.0/24\nadd action=accept chain=input comment=MGMT-INPUT-MNDP dst-port=5678 \\\n    in-interface=ether1 protocol=udp src-address=192.168.1.0/24\nadd action=accept chain=input comment=MGMT-INPUT-OOB-LOCAL in-interface=\\\n    ether5 src-address=10.99.0.0/24\nadd action=drop chain=input comment=MGMT-INPUT-DROP-REST\nadd action=accept chain=forward comment=MGMT-FWD-ESTABLISHED \\\n    connection-state=established,related\nadd action=accept chain=forward comment=MGMT-FWD-ALLOW-DNAT \\\n    connection-nat-state=dstnat in-interface=ether1\nadd action=accept chain=forward comment=ALLOW-TZSP-OOB dst-address=\\\n    192.168.1.0/24 in-interface=ether5 src-address=10.99.0.0/24\nadd action=drop chain=forward comment=ISOLATION-ZERO-ROUTING-DROP\n/ip firewall nat\nadd action=dst-nat chain=dstnat comment=DNAT-HQ-CORE-01 dst-port=2203 \\\n    in-interface=ether1 protocol=tcp to-addresses=10.99.0.3 to-ports=22\nadd action=dst-nat chain=dstnat comment=DNAT-BRANCH-EDGE-01 dst-port=2204 \\\n    in-interface=ether1 protocol=tcp to-addresses=10.99.0.4 to-ports=22\nadd action=dst-nat chain=dstnat comment=DNAT-BRANCH-CORE-01 dst-port=2205 \\\n    in-interface=ether1 protocol=tcp to-addresses=10.99.0.5 to-ports=22\nadd action=dst-nat chain=dstnat comment=DNAT-HQ-EDGE-01 dst-port=2206 \\\n    in-interface=ether1 protocol=tcp to-addresses=10.99.0.6 to-ports=22\nadd action=masquerade chain=srcnat comment=NAT-OOB-TO-PC dst-address=\\\n    192.168.1.0/24 out-interface=ether1 src-address=10.99.0.0/24\nadd action=masquerade chain=srcnat comment=SNAT-MASQUERADE-OOB out-interface=\\\n    ether5\n/ip route\nadd comment=DEFAULT-GW distance=1 gateway=192.168.1.1\n/ip service\nset telnet disabled=yes\nset ftp disabled=yes\nset www disabled=yes\nset api disabled=yes\nset api-ssl disabled=yes\n/ip ssh\nset strong-crypto=yes\n/system clock\nset time-zone-name=Europe/Madrid\n/system identity\nset name=bastion-oob\n/system routerboard settings\nset auto-upgrade=yes\n/tool romon\nset enabled=yes"
+    ],
+    "stdout_lines": [
+        [
+            "# sep/07/2026 19:57:23 by RouterOS 6.49.21",
+            "# software id = RWTE-05J8",
+            "#",
+            "# model = RouterBOARD 750UP r2",
+            "# serial number = 65B105705259",
+            "/interface ethernet",
+            "set [ find default-name=ether2 ] comment=UNUSED-ISOLATED disabled=yes",
+            "set [ find default-name=ether3 ] comment=UNUSED-ISOLATED disabled=yes",
+            "set [ find default-name=ether4 ] comment=UNUSED-ISOLATED disabled=yes",
+            "set [ find default-name=ether5 ] comment=OOB-SWITCH-UPLINK",
+            "/interface list",
+            "add comment=defconf name=WAN",
+            "add comment=defconf name=LAN",
+            "/interface wireless security-profiles",
+            "set [ find default=yes ] supplicant-identity=MikroTik",
+            "/ip neighbor discovery-settings",
+            "set discover-interface-list=all",
+            "/interface list member",
+            "add comment=defconf list=LAN",
+            "add comment=defconf interface=ether1 list=WAN",
+            "/ip address",
+            "add address=192.168.1.210/24 comment=WAN-LAN interface=ether1 network=\\",
+            "    192.168.1.0",
+            "add address=10.99.0.1/24 comment=GATEWAY-OOB network=10.99.0.0",
+            "add address=10.99.0.1/24 comment=GATEWAY-OOB interface=ether5 network=\\",
+            "    10.99.0.0",
+            "/ip dns",
+            "set allow-remote-requests=yes servers=192.168.1.1,1.1.1.1",
+            "/ip dns static",
+            "add address=192.168.88.1 comment=defconf name=router.lan",
+            "/ip firewall filter",
+            "add action=accept chain=input comment=\\",
+            "    \"defconf: accept established,related,untracked\" connection-state=\\",
+            "    established,related,untracked",
+            "add action=drop chain=input comment=\"defconf: drop invalid\" connection-state=\\",
+            "    invalid disabled=yes",
+            "add action=accept chain=input comment=\"defconf: accept ICMP\" protocol=icmp",
+            "add action=accept chain=input comment=\\",
+            "    \"defconf: accept to local loopback (for CAPsMAN)\" dst-address=127.0.0.1",
+            "add action=drop chain=input comment=\"defconf: drop all not coming from LAN\" \\",
+            "    disabled=yes in-interface-list=!LAN",
+            "add action=accept chain=forward comment=\"defconf: accept in ipsec policy\" \\",
+            "    ipsec-policy=in,ipsec",
+            "add action=accept chain=forward comment=\"defconf: accept out ipsec policy\" \\",
+            "    ipsec-policy=out,ipsec",
+            "add action=fasttrack-connection chain=forward comment=\"defconf: fasttrack\" \\",
+            "    connection-state=established,related",
+            "add action=accept chain=forward comment=\\",
+            "    \"defconf: accept established,related, untracked\" connection-state=\\",
+            "    established,related,untracked",
+            "add action=drop chain=forward comment=\"defconf: drop invalid\" \\",
+            "    connection-state=invalid",
+            "add action=drop chain=forward comment=\\",
+            "    \"defconf: drop all from WAN not DSTNATed\" connection-nat-state=!dstnat \\",
+            "    connection-state=new in-interface-list=WAN",
+            "add action=accept chain=input comment=MGMT-INPUT-ESTABLISHED \\",
+            "    connection-state=established,related",
+            "add action=accept chain=input comment=MGMT-INPUT-ICMP in-interface=ether1 \\",
+            "    protocol=icmp src-address=192.168.1.0/24",
+            "add action=accept chain=input comment=MGMT-INPUT-SSH-WINBOX dst-port=22,8291 \\",
+            "    in-interface=ether1 protocol=tcp src-address=192.168.1.0/24",
+            "add action=accept chain=input comment=MGMT-INPUT-MNDP dst-port=5678 \\",
+            "    in-interface=ether1 protocol=udp src-address=192.168.1.0/24",
+            "# no interface",
+            "add action=accept chain=input comment=MGMT-INPUT-LAB-LOCAL in-interface=*7",
+            "add action=drop chain=input comment=MGMT-INPUT-DROP-REST",
+            "add action=accept chain=forward comment=MGMT-FWD-ESTABLISHED \\",
+            "    connection-state=established,related",
+            "add action=accept chain=forward comment=MGMT-FWD-ALLOW-DNAT \\",
+            "    connection-nat-state=dstnat in-interface=ether1",
+            "add action=accept chain=forward comment=ALLOW-TZSP-OOB dst-address=\\",
+            "    192.168.1.0/24 src-address=10.99.0.0/24",
+            "add action=drop chain=forward comment=ISOLATION-ZERO-ROUTING-DROP",
+            "add action=accept chain=input comment=MGMT-INPUT-ESTABLISHED \\",
+            "    connection-state=established,related",
+            "add action=accept chain=input comment=MGMT-INPUT-ICMP in-interface=ether1 \\",
+            "    protocol=icmp src-address=192.168.1.0/24",
+            "add action=accept chain=input comment=MGMT-INPUT-SSH-WINBOX dst-port=22,8291 \\",
+            "    in-interface=ether1 protocol=tcp src-address=192.168.1.0/24",
+            "add action=accept chain=input comment=MGMT-INPUT-MNDP dst-port=5678 \\",
+            "    in-interface=ether1 protocol=udp src-address=192.168.1.0/24",
+            "add action=accept chain=input comment=MGMT-INPUT-OOB-LOCAL in-interface=\\",
+            "    ether5 src-address=10.99.0.0/24",
+            "add action=drop chain=input comment=MGMT-INPUT-DROP-REST",
+            "add action=accept chain=forward comment=MGMT-FWD-ESTABLISHED \\",
+            "    connection-state=established,related",
+            "add action=accept chain=forward comment=MGMT-FWD-ALLOW-DNAT \\",
+            "    connection-nat-state=dstnat in-interface=ether1",
+            "add action=accept chain=forward comment=ALLOW-TZSP-OOB dst-address=\\",
+            "    192.168.1.0/24 in-interface=ether5 src-address=10.99.0.0/24",
+            "add action=drop chain=forward comment=ISOLATION-ZERO-ROUTING-DROP",
+            "/ip firewall nat",
+            "add action=dst-nat chain=dstnat comment=DNAT-HQ-CORE-01 dst-port=2203 \\",
+            "    in-interface=ether1 protocol=tcp to-addresses=10.99.0.3 to-ports=22",
+            "add action=dst-nat chain=dstnat comment=DNAT-BRANCH-EDGE-01 dst-port=2204 \\",
+            "    in-interface=ether1 protocol=tcp to-addresses=10.99.0.4 to-ports=22",
+            "add action=dst-nat chain=dstnat comment=DNAT-BRANCH-CORE-01 dst-port=2205 \\",
+            "    in-interface=ether1 protocol=tcp to-addresses=10.99.0.5 to-ports=22",
+            "add action=dst-nat chain=dstnat comment=DNAT-HQ-EDGE-01 dst-port=2206 \\",
+            "    in-interface=ether1 protocol=tcp to-addresses=10.99.0.6 to-ports=22",
+            "add action=masquerade chain=srcnat comment=NAT-OOB-TO-PC dst-address=\\",
+            "    192.168.1.0/24 out-interface=ether1 src-address=10.99.0.0/24",
+            "add action=masquerade chain=srcnat comment=SNAT-MASQUERADE-OOB out-interface=\\",
+            "    ether5",
+            "/ip route",
+            "add comment=DEFAULT-GW distance=1 gateway=192.168.1.1",
+            "/ip service",
+            "set telnet disabled=yes",
+            "set ftp disabled=yes",
+            "set www disabled=yes",
+            "set api disabled=yes",
+            "set api-ssl disabled=yes",
+            "/ip ssh",
+            "set strong-crypto=yes",
+            "/system clock",
+            "set time-zone-name=Europe/Madrid",
+            "/system identity",
+            "set name=bastion-oob",
+            "/system routerboard settings",
+            "set auto-upgrade=yes",
+            "/tool romon",
+            "set enabled=yes"
+        ]
+    ]
+}
+
+TASK [3. Guardar archivo .rsc en el controlador local] *************************
+task path: /mnt/d/Dev/Ansible/LAB001/backup_nodes.yaml:28
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822 `" && echo ansible-tmp-1788803845.6831357-119525-20163024922822="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822 `" )'
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201 `" && echo ansible-tmp-1788803845.6914303-119526-174756555247201="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201 `" )'
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813 `" && echo ansible-tmp-1788803845.701826-119527-73883983890813="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813 `" )'
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750 `" && echo ansible-tmp-1788803845.7112892-119537-199115464327750="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750 `" )'
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396 `" && echo ansible-tmp-1788803845.7204518-119550-135338594320396="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/stat.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/stat.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/stat.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpkpr53_lo TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/AnsiballZ_stat.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/stat.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/stat.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpbl_khjwe TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/AnsiballZ_stat.py
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/AnsiballZ_stat.py'
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpdupip7vi TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/AnsiballZ_stat.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmprfnqz9ny TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/AnsiballZ_stat.py
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/AnsiballZ_stat.py'
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp4b75mme8 TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/AnsiballZ_stat.py
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/AnsiballZ_stat.py'
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/AnsiballZ_stat.py'
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/AnsiballZ_stat.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/AnsiballZ_stat.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/AnsiballZ_stat.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/AnsiballZ_stat.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/AnsiballZ_stat.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/AnsiballZ_stat.py'
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/.cvruzgdz TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/.source.rsc
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/.dz8fdjnl TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/.source.rsc
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/.source.rsc'
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/.source.rsc'
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/.z4oz6dx7 TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/.source.rsc
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/.source.rsc'
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/.seatylrr TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/.source.rsc
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/.source.rsc'
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/.kbh5f8x7 TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/.source.rsc
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/.source.rsc'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/copy.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/copy.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/copy.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/copy.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/copy.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpxnqy3ybz TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/AnsiballZ_copy.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpqh8k9173 TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/AnsiballZ_copy.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp7p6xp36t TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/AnsiballZ_copy.py
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/AnsiballZ_copy.py'
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmphla7_jme TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/AnsiballZ_copy.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmphyjdo2hv TO /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/AnsiballZ_copy.py
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/AnsiballZ_copy.py'
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/AnsiballZ_copy.py'
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/AnsiballZ_copy.py'
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/ /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/AnsiballZ_copy.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/AnsiballZ_copy.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/AnsiballZ_copy.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/AnsiballZ_copy.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/AnsiballZ_copy.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/AnsiballZ_copy.py'
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/ > /dev/null 2>&1'
+changed: [branch-core-01 -> localhost] => {
+    "changed": true,
+    "checksum": "56a3037fd6f1393b83d701e8956e98c7ec9d9da0",
+    "dest": "backups/20260907_195720/branch-core-01.rsc",
+    "diff": [],
+    "gid": 1000,
+    "group": "richard",
+    "md5sum": "ab058aae584623d7ad3bc22b3b55120d",
+    "mode": "0777",
+    "owner": "richard",
+    "size": 2438,
+    "src": "/home/richard/.ansible/tmp/ansible-tmp-1788803845.7112892-119537-199115464327750/.source.rsc",
+    "state": "file",
+    "uid": 1000
+}
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/ > /dev/null 2>&1'
+changed: [hq-core-01 -> localhost] => {
+    "changed": true,
+    "checksum": "15024c5356a884edb1aa8ef818a0ab1ad7b67376",
+    "dest": "backups/20260907_195720/hq-core-01.rsc",
+    "diff": [],
+    "gid": 1000,
+    "group": "richard",
+    "md5sum": "ab4ac5342a5f1249a55fac56fe1d8023",
+    "mode": "0777",
+    "owner": "richard",
+    "size": 1392,
+    "src": "/home/richard/.ansible/tmp/ansible-tmp-1788803845.6914303-119526-174756555247201/.source.rsc",
+    "state": "file",
+    "uid": 1000
+}
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/ > /dev/null 2>&1'
+changed: [oob-master -> localhost] => {
+    "changed": true,
+    "checksum": "632046eed665b4c91c4ff88ef9515404abbc7fee",
+    "dest": "backups/20260907_195720/oob-master.rsc",
+    "diff": [],
+    "gid": 1000,
+    "group": "richard",
+    "md5sum": "58b2a4e0209424abbd8a11bfb637b5e4",
+    "mode": "0777",
+    "owner": "richard",
+    "size": 5783,
+    "src": "/home/richard/.ansible/tmp/ansible-tmp-1788803845.6831357-119525-20163024922822/.source.rsc",
+    "state": "file",
+    "uid": 1000
+}
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/ > /dev/null 2>&1'
+changed: [hq-dist-01 -> localhost] => {
+    "changed": true,
+    "checksum": "b4b820d68ae0c580c9ebda5a41b0005ee2cb9367",
+    "dest": "backups/20260907_195720/hq-dist-01.rsc",
+    "diff": [],
+    "gid": 1000,
+    "group": "richard",
+    "md5sum": "1b847d4183cde052558a575f866f1bd3",
+    "mode": "0777",
+    "owner": "richard",
+    "size": 1514,
+    "src": "/home/richard/.ansible/tmp/ansible-tmp-1788803845.7204518-119550-135338594320396/.source.rsc",
+    "state": "file",
+    "uid": 1000
+}
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/ > /dev/null 2>&1'
+changed: [branch-edge-01 -> localhost] => {
+    "changed": true,
+    "checksum": "70313c053dc2c655866818caca95f170c50733af",
+    "dest": "backups/20260907_195720/branch-edge-01.rsc",
+    "diff": [],
+    "gid": 1000,
+    "group": "richard",
+    "md5sum": "05f5dcacd962aa7ae82926e965160980",
+    "mode": "0777",
+    "owner": "richard",
+    "size": 2679,
+    "src": "/home/richard/.ansible/tmp/ansible-tmp-1788803845.701826-119527-73883983890813/.source.rsc",
+    "state": "file",
+    "uid": 1000
+}
+
+TASK [4. Generar backup binario en el router (.backup)] ************************
+task path: /mnt/d/Dev/Ansible/LAB001/backup_nodes.yaml:35
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.753047-119674-173913800894065 `" && echo ansible-tmp-1788803846.753047-119674-173913800894065="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.753047-119674-173913800894065 `" )'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7577918-119673-24462964856457 `" && echo ansible-tmp-1788803846.7577918-119673-24462964856457="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7577918-119673-24462964856457 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp0ug9kl69 TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.753047-119674-173913800894065/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.753047-119674-173913800894065/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.753047-119674-173913800894065/AnsiballZ_command.py'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp0_is217g TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7577918-119673-24462964856457/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7577918-119673-24462964856457/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7577918-119673-24462964856457/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.753047-119674-173913800894065/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7577918-119673-24462964856457/AnsiballZ_command.py'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7848651-119676-161572616326108 `" && echo ansible-tmp-1788803846.7848651-119676-161572616326108="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7848651-119676-161572616326108 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpcprrh2fh TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7848651-119676-161572616326108/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7848651-119676-161572616326108/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7848651-119676-161572616326108/AnsiballZ_command.py'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7961085-119675-23582596887822 `" && echo ansible-tmp-1788803846.7961085-119675-23582596887822="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7961085-119675-23582596887822 `" )'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7848651-119676-161572616326108/AnsiballZ_command.py'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.8011072-119677-219248553746259 `" && echo ansible-tmp-1788803846.8011072-119677-219248553746259="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.8011072-119677-219248553746259 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp8zi8omuq TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7961085-119675-23582596887822/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7961085-119675-23582596887822/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7961085-119675-23582596887822/AnsiballZ_command.py'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpsm827m44 TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.8011072-119677-219248553746259/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.8011072-119677-219248553746259/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.8011072-119677-219248553746259/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7961085-119675-23582596887822/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.8011072-119677-219248553746259/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7848651-119676-161572616326108/ > /dev/null 2>&1'
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.8011072-119677-219248553746259/ > /dev/null 2>&1'
+changed: [branch-core-01] => {
+    "changed": true,
+    "stdout": [
+        "Saving system configuration\nConfiguration backup saved"
+    ],
+    "stdout_lines": [
+        [
+            "Saving system configuration",
+            "Configuration backup saved"
+        ]
+    ]
+}
+changed: [hq-dist-01] => {
+    "changed": true,
+    "stdout": [
+        "Saving system configuration\nConfiguration backup saved"
+    ],
+    "stdout_lines": [
+        [
+            "Saving system configuration",
+            "Configuration backup saved"
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.753047-119674-173913800894065/ > /dev/null 2>&1'
+changed: [hq-core-01] => {
+    "changed": true,
+    "stdout": [
+        "Saving system configuration\nConfiguration backup saved"
+    ],
+    "stdout_lines": [
+        [
+            "Saving system configuration",
+            "Configuration backup saved"
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7961085-119675-23582596887822/ > /dev/null 2>&1'
+changed: [branch-edge-01] => {
+    "changed": true,
+    "stdout": [
+        "Saving system configuration\nConfiguration backup saved"
+    ],
+    "stdout_lines": [
+        [
+            "Saving system configuration",
+            "Configuration backup saved"
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803846.7577918-119673-24462964856457/ > /dev/null 2>&1'
+changed: [oob-master] => {
+    "changed": true,
+    "stdout": [
+        "Saving system configuration\nConfiguration backup saved"
+    ],
+    "stdout_lines": [
+        [
+            "Saving system configuration",
+            "Configuration backup saved"
+        ]
+    ]
+}
+
+TASK [5. Localizar ruta exacta del archivo binario en el almacenamiento] *******
+task path: /mnt/d/Dev/Ansible/LAB001/backup_nodes.yaml:40
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2299457-119789-87481940835577 `" && echo ansible-tmp-1788803848.2299457-119789-87481940835577="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2299457-119789-87481940835577 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpsd_53uw3 TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2299457-119789-87481940835577/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2299457-119789-87481940835577/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2299457-119789-87481940835577/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2299457-119789-87481940835577/AnsiballZ_command.py'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2527957-119792-151786269246068 `" && echo ansible-tmp-1788803848.2527957-119792-151786269246068="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2527957-119792-151786269246068 `" )'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2534754-119791-123207215163952 `" && echo ansible-tmp-1788803848.2534754-119791-123207215163952="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2534754-119791-123207215163952 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpi4oys415 TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2527957-119792-151786269246068/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2527957-119792-151786269246068/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2527957-119792-151786269246068/AnsiballZ_command.py'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpyvpojmox TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2534754-119791-123207215163952/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2534754-119791-123207215163952/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2534754-119791-123207215163952/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2527957-119792-151786269246068/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2534754-119791-123207215163952/AnsiballZ_command.py'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2771697-119793-271630756979400 `" && echo ansible-tmp-1788803848.2771697-119793-271630756979400="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2771697-119793-271630756979400 `" )'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2781765-119790-214574971093905 `" && echo ansible-tmp-1788803848.2781765-119790-214574971093905="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2781765-119790-214574971093905 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpqg4z5z7u TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2781765-119790-214574971093905/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2781765-119790-214574971093905/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2781765-119790-214574971093905/AnsiballZ_command.py'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpvrwww66x TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2771697-119793-271630756979400/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2771697-119793-271630756979400/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2771697-119793-271630756979400/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2781765-119790-214574971093905/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2771697-119793-271630756979400/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2534754-119791-123207215163952/ > /dev/null 2>&1'
+changed: [branch-edge-01] => {
+    "changed": true,
+    "stdout": [
+        "snap_ansible.backup"
+    ],
+    "stdout_lines": [
+        [
+            "snap_ansible.backup"
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2781765-119790-214574971093905/ > /dev/null 2>&1'
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2527957-119792-151786269246068/ > /dev/null 2>&1'
+changed: [hq-core-01] => {
+    "changed": true,
+    "stdout": [
+        "snap_ansible.backup"
+    ],
+    "stdout_lines": [
+        [
+            "snap_ansible.backup"
+        ]
+    ]
+}
+changed: [branch-core-01] => {
+    "changed": true,
+    "stdout": [
+        "snap_ansible.backup"
+    ],
+    "stdout_lines": [
+        [
+            "snap_ansible.backup"
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2771697-119793-271630756979400/ > /dev/null 2>&1'
+changed: [hq-dist-01] => {
+    "changed": true,
+    "stdout": [
+        "snap_ansible.backup"
+    ],
+    "stdout_lines": [
+        [
+            "snap_ansible.backup"
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803848.2299457-119789-87481940835577/ > /dev/null 2>&1'
+changed: [oob-master] => {
+    "changed": true,
+    "stdout": [
+        "snap_ansible.backup"
+    ],
+    "stdout_lines": [
+        [
+            "snap_ansible.backup"
+        ]
+    ]
+}
+
+TASK [6. Descargar backup binario vía SCP hacia el controlador local] **********
+task path: /mnt/d/Dev/Ansible/LAB001/backup_nodes.yaml:46
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803849.1827295-119903-79020033608585 `" && echo ansible-tmp-1788803849.1827295-119903-79020033608585="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803849.1827295-119903-79020033608585 `" )'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803849.182777-119904-117458559416678 `" && echo ansible-tmp-1788803849.182777-119904-117458559416678="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803849.182777-119904-117458559416678 `" )'
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803849.1924756-119905-263619579181479 `" && echo ansible-tmp-1788803849.1924756-119905-263619579181479="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803849.1924756-119905-263619579181479 `" )'
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803849.197078-119907-184929027433247 `" && echo ansible-tmp-1788803849.197078-119907-184929027433247="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803849.197078-119907-184929027433247 `" )'
+<localhost> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<localhost> EXEC /bin/sh -c 'echo ~richard'
+<localhost> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-tmp-1788803849.2035034-119909-218748408237693 `" && echo ansible-tmp-1788803849.2035034-119909-218748408237693="` echo /home/richard/.ansible/tmp/ansible-tmp-1788803849.2035034-119909-218748408237693 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/command.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/command.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/command.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpao2od9jk TO /home/richard/.ansible/tmp/ansible-tmp-1788803849.182777-119904-117458559416678/AnsiballZ_command.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/command.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible/modules/command.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp8oqkj4ss TO /home/richard/.ansible/tmp/ansible-tmp-1788803849.1827295-119903-79020033608585/AnsiballZ_command.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpn6zjnp1p TO /home/richard/.ansible/tmp/ansible-tmp-1788803849.1924756-119905-263619579181479/AnsiballZ_command.py
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803849.182777-119904-117458559416678/ /home/richard/.ansible/tmp/ansible-tmp-1788803849.182777-119904-117458559416678/AnsiballZ_command.py'
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803849.1827295-119903-79020033608585/ /home/richard/.ansible/tmp/ansible-tmp-1788803849.1827295-119903-79020033608585/AnsiballZ_command.py'
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803849.1924756-119905-263619579181479/ /home/richard/.ansible/tmp/ansible-tmp-1788803849.1924756-119905-263619579181479/AnsiballZ_command.py'
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpbw9c3ze7 TO /home/richard/.ansible/tmp/ansible-tmp-1788803849.2035034-119909-218748408237693/AnsiballZ_command.py
+<localhost> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp01ty12q6 TO /home/richard/.ansible/tmp/ansible-tmp-1788803849.197078-119907-184929027433247/AnsiballZ_command.py
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803849.197078-119907-184929027433247/ /home/richard/.ansible/tmp/ansible-tmp-1788803849.197078-119907-184929027433247/AnsiballZ_command.py'
+<localhost> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-tmp-1788803849.2035034-119909-218748408237693/ /home/richard/.ansible/tmp/ansible-tmp-1788803849.2035034-119909-218748408237693/AnsiballZ_command.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803849.1924756-119905-263619579181479/AnsiballZ_command.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803849.182777-119904-117458559416678/AnsiballZ_command.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803849.1827295-119903-79020033608585/AnsiballZ_command.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803849.197078-119907-184929027433247/AnsiballZ_command.py'
+<localhost> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-tmp-1788803849.2035034-119909-218748408237693/AnsiballZ_command.py'
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803849.182777-119904-117458559416678/ > /dev/null 2>&1'
+changed: [hq-core-01 -> localhost] => {
+    "changed": true,
+    "changed_when_result": true,
+    "cmd": [
+        "scp",
+        "-P",
+        "2203",
+        "-o",
+        "StrictHostKeyChecking=no",
+        "-o",
+        "UserKnownHostsFile=/dev/null",
+        "-i",
+        "/home/richard/.ssh/id_rsa",
+        "admin+ct@192.168.1.210:snap_ansible.backup",
+        "backups/20260907_195720/hq-core-01.backup"
+    ],
+    "delta": "0:00:00.674470",
+    "end": "2026-09-07 19:57:30.124117",
+    "msg": "",
+    "rc": 0,
+    "start": "2026-09-07 19:57:29.449647",
+    "stderr": "Warning: Permanently added '[192.168.1.210]:2203' (RSA) to the list of known hosts.",
+    "stderr_lines": [
+        "Warning: Permanently added '[192.168.1.210]:2203' (RSA) to the list of known hosts."
+    ],
+    "stdout": "",
+    "stdout_lines": []
+}
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803849.1924756-119905-263619579181479/ > /dev/null 2>&1'
+changed: [branch-edge-01 -> localhost] => {
+    "changed": true,
+    "changed_when_result": true,
+    "cmd": [
+        "scp",
+        "-P",
+        "2204",
+        "-o",
+        "StrictHostKeyChecking=no",
+        "-o",
+        "UserKnownHostsFile=/dev/null",
+        "-i",
+        "/home/richard/.ssh/id_rsa",
+        "admin+ct@192.168.1.210:snap_ansible.backup",
+        "backups/20260907_195720/branch-edge-01.backup"
+    ],
+    "delta": "0:00:00.669536",
+    "end": "2026-09-07 19:57:30.131927",
+    "msg": "",
+    "rc": 0,
+    "start": "2026-09-07 19:57:29.462391",
+    "stderr": "Warning: Permanently added '[192.168.1.210]:2204' (RSA) to the list of known hosts.",
+    "stderr_lines": [
+        "Warning: Permanently added '[192.168.1.210]:2204' (RSA) to the list of known hosts."
+    ],
+    "stdout": "",
+    "stdout_lines": []
+}
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803849.2035034-119909-218748408237693/ > /dev/null 2>&1'
+changed: [hq-dist-01 -> localhost] => {
+    "changed": true,
+    "changed_when_result": true,
+    "cmd": [
+        "scp",
+        "-P",
+        "2206",
+        "-o",
+        "StrictHostKeyChecking=no",
+        "-o",
+        "UserKnownHostsFile=/dev/null",
+        "-i",
+        "/home/richard/.ssh/id_rsa",
+        "admin+ct@192.168.1.210:snap_ansible.backup",
+        "backups/20260907_195720/hq-dist-01.backup"
+    ],
+    "delta": "0:00:00.960886",
+    "end": "2026-09-07 19:57:30.423110",
+    "msg": "",
+    "rc": 0,
+    "start": "2026-09-07 19:57:29.462224",
+    "stderr": "Warning: Permanently added '[192.168.1.210]:2206' (RSA) to the list of known hosts.",
+    "stderr_lines": [
+        "Warning: Permanently added '[192.168.1.210]:2206' (RSA) to the list of known hosts."
+    ],
+    "stdout": "",
+    "stdout_lines": []
+}
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803849.197078-119907-184929027433247/ > /dev/null 2>&1'
+changed: [branch-core-01 -> localhost] => {
+    "changed": true,
+    "changed_when_result": true,
+    "cmd": [
+        "scp",
+        "-P",
+        "2205",
+        "-o",
+        "StrictHostKeyChecking=no",
+        "-o",
+        "UserKnownHostsFile=/dev/null",
+        "-i",
+        "/home/richard/.ssh/id_rsa",
+        "admin+ct@192.168.1.210:snap_ansible.backup",
+        "backups/20260907_195720/branch-core-01.backup"
+    ],
+    "delta": "0:00:00.988086",
+    "end": "2026-09-07 19:57:30.455663",
+    "msg": "",
+    "rc": 0,
+    "start": "2026-09-07 19:57:29.467577",
+    "stderr": "Warning: Permanently added '[192.168.1.210]:2205' (RSA) to the list of known hosts.",
+    "stderr_lines": [
+        "Warning: Permanently added '[192.168.1.210]:2205' (RSA) to the list of known hosts."
+    ],
+    "stdout": "",
+    "stdout_lines": []
+}
+<localhost> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-tmp-1788803849.1827295-119903-79020033608585/ > /dev/null 2>&1'
+changed: [oob-master -> localhost] => {
+    "changed": true,
+    "changed_when_result": true,
+    "cmd": [
+        "scp",
+        "-P",
+        "22",
+        "-o",
+        "StrictHostKeyChecking=no",
+        "-o",
+        "UserKnownHostsFile=/dev/null",
+        "-i",
+        "/home/richard/.ssh/id_rsa",
+        "admin+ct@192.168.1.210:snap_ansible.backup",
+        "backups/20260907_195720/oob-master.backup"
+    ],
+    "delta": "0:00:01.316008",
+    "end": "2026-09-07 19:57:30.769787",
+    "msg": "",
+    "rc": 0,
+    "start": "2026-09-07 19:57:29.453779",
+    "stderr": "Warning: Permanently added '192.168.1.210' (RSA) to the list of known hosts.",
+    "stderr_lines": [
+        "Warning: Permanently added '192.168.1.210' (RSA) to the list of known hosts."
+    ],
+    "stdout": "",
+    "stdout_lines": []
+}
+
+TASK [7. Limpiar archivo binario temporal en el router] ************************
+task path: /mnt/d/Dev/Ansible/LAB001/backup_nodes.yaml:57
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.262645-120018-180639004210845 `" && echo ansible-tmp-1788803851.262645-120018-180639004210845="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.262645-120018-180639004210845 `" )'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2629652-120020-262355011254482 `" && echo ansible-tmp-1788803851.2629652-120020-262355011254482="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2629652-120020-262355011254482 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpfrfa0xqg TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2629652-120020-262355011254482/AnsiballZ_command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp9ydjottz TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.262645-120018-180639004210845/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2629652-120020-262355011254482/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2629652-120020-262355011254482/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.262645-120018-180639004210845/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.262645-120018-180639004210845/AnsiballZ_command.py'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2738519-120021-111176558734832 `" && echo ansible-tmp-1788803851.2738519-120021-111176558734832="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2738519-120021-111176558734832 `" )'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2629652-120020-262355011254482/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.262645-120018-180639004210845/AnsiballZ_command.py'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpxdb83uku TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2738519-120021-111176558734832/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2738519-120021-111176558734832/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2738519-120021-111176558734832/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2738519-120021-111176558734832/AnsiballZ_command.py'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2874467-120022-94915786478124 `" && echo ansible-tmp-1788803851.2874467-120022-94915786478124="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2874467-120022-94915786478124 `" )'
+<192.168.1.210> ESTABLISH LOCAL CONNECTION FOR USER: richard
+<192.168.1.210> EXEC /bin/sh -c '( umask 77 && mkdir -p "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i `"&& mkdir "` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.288698-120019-256163935569234 `" && echo ansible-tmp-1788803851.288698-120019-256163935569234="` echo /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.288698-120019-256163935569234 `" )'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmp0v0dptp8 TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.288698-120019-256163935569234/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.288698-120019-256163935569234/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.288698-120019-256163935569234/AnsiballZ_command.py'
+Using module file /home/richard/ansible-venv/lib/python3.12/site-packages/ansible_collections/community/routeros/plugins/modules/command.py
+<192.168.1.210> PUT /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/tmpkp3yg8zm TO /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2874467-120022-94915786478124/AnsiballZ_command.py
+<192.168.1.210> EXEC /bin/sh -c 'chmod u+rwx /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2874467-120022-94915786478124/ /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2874467-120022-94915786478124/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.288698-120019-256163935569234/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c '/home/richard/ansible-venv/bin/python3 /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2874467-120022-94915786478124/AnsiballZ_command.py'
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2629652-120020-262355011254482/ > /dev/null 2>&1'
+changed: [branch-edge-01] => {
+    "changed": true,
+    "stdout": [
+        ""
+    ],
+    "stdout_lines": [
+        [
+            ""
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2738519-120021-111176558734832/ > /dev/null 2>&1'
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.2874467-120022-94915786478124/ > /dev/null 2>&1'
+changed: [branch-core-01] => {
+    "changed": true,
+    "stdout": [
+        ""
+    ],
+    "stdout_lines": [
+        [
+            ""
+        ]
+    ]
+}
+changed: [hq-dist-01] => {
+    "changed": true,
+    "stdout": [
+        ""
+    ],
+    "stdout_lines": [
+        [
+            ""
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.288698-120019-256163935569234/ > /dev/null 2>&1'
+changed: [hq-core-01] => {
+    "changed": true,
+    "stdout": [
+        ""
+    ],
+    "stdout_lines": [
+        [
+            ""
+        ]
+    ]
+}
+<192.168.1.210> EXEC /bin/sh -c 'rm -f -r /home/richard/.ansible/tmp/ansible-local-119345i4bc_a3i/ansible-tmp-1788803851.262645-120018-180639004210845/ > /dev/null 2>&1'
+changed: [oob-master] => {
+    "changed": true,
+    "stdout": [
+        ""
+    ],
+    "stdout_lines": [
+        [
+            ""
+        ]
+    ]
+}
+
+PLAY RECAP *********************************************************************
+branch-core-01             : ok=6    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+branch-edge-01             : ok=6    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+hq-core-01                 : ok=6    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+hq-dist-01                 : ok=6    changed=6    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+oob-master                 : ok=8    changed=7    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
